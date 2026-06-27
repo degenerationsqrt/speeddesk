@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="SpeedDesk">
+  <rect width="64" height="64" rx="12" fill="#0b0f0d"/>
+  <path d="M11 47h42M11 34h42M11 21h42" stroke="#1f7a4d" stroke-width="3" stroke-linecap="round"/>
+  <path d="M22 50c6-16 13-25 25-34" stroke="#f97316" stroke-width="5" stroke-linecap="round" fill="none"/>
+  <circle cx="22" cy="50" r="4" fill="#f8fafc"/>
+  <path d="M17 13h21" stroke="#38bdf8" stroke-width="4" stroke-linecap="round"/>
+</svg>
