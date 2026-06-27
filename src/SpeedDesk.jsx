@@ -34,6 +34,8 @@ const CATEGORY_COLORS = {
 const SOURCE_LABELS = {
   workbook: "Training Workbook.xlsx",
   drills: "DRILLS.xlsx",
+  closeControl: "Close_Control_Dribbling_Tracker.xlsx",
+  advancedTouch: "Advanced_Technical_Touch_Tracker.xlsx",
   plyoDoc: "Plyometric Drills.docx",
   overtime: "Overtime Athletes soccer speed PDF",
   plylo: "PLYLO.pdf",
@@ -527,6 +529,210 @@ const DRILLS = [
     cues: ["Pull into the V", "Push out cleanly", "Keep eyes up between touches"],
   },
   {
+    id: "right-foot-only-close",
+    name: "Right Foot Only Close Control",
+    category: "Ball Mastery",
+    level: "Beginner",
+    dose: "60 sec",
+    equipment: "Ball",
+    metric: "touches",
+    source: SOURCE_LABELS.closeControl,
+    tpm: 120,
+    cues: ["Keep the ball within 1 yard", "Use all right-foot surfaces", "Stay springy with a slight knee bend"],
+  },
+  {
+    id: "left-foot-only-close",
+    name: "Left Foot Only Close Control",
+    category: "Ball Mastery",
+    level: "Beginner",
+    dose: "60 sec",
+    equipment: "Ball",
+    metric: "touches",
+    source: SOURCE_LABELS.closeControl,
+    tpm: 120,
+    cues: ["Build non-dominant confidence", "Lock the ankle on outside pushes", "Match right-foot rhythm"],
+  },
+  {
+    id: "outside-touches-lr",
+    name: "Outside Touches L/R",
+    category: "Ball Mastery",
+    level: "Beginner",
+    dose: "45 sec",
+    equipment: "Ball",
+    metric: "touches",
+    source: SOURCE_LABELS.closeControl,
+    tpm: 110,
+    cues: ["Turn the toe slightly inward", "Push the ball laterally", "Stay ready to evade tight pressure"],
+  },
+  {
+    id: "inside-pendulum",
+    name: "Inside Touches Pendulum",
+    category: "Ball Mastery",
+    level: "Beginner",
+    dose: "45 sec",
+    equipment: "Ball",
+    metric: "touches",
+    source: SOURCE_LABELS.closeControl,
+    tpm: 140,
+    cues: ["Cushion each inside touch", "Shift side to side rapidly", "Keep the ball under the hips"],
+  },
+  {
+    id: "croquetas-lr",
+    name: "Croquetas L/R",
+    category: "Ball Mastery",
+    level: "Intermediate",
+    dose: "60 sec",
+    equipment: "Ball",
+    metric: "touches",
+    source: SOURCE_LABELS.closeControl,
+    tpm: 100,
+    cues: ["Explosive double touch across the body", "Move before the defender commits", "Keep the second touch playable"],
+  },
+  {
+    id: "ball-rolls-lr",
+    name: "Ball Rolls L/R",
+    category: "Ball Mastery",
+    level: "Beginner",
+    dose: "45 sec",
+    equipment: "Ball",
+    metric: "touches",
+    source: SOURCE_LABELS.closeControl,
+    tpm: 90,
+    cues: ["Reach over the top of the ball", "Drag across body center", "Keep the upper body quiet"],
+  },
+  {
+    id: "drag-backs-v-pulls",
+    name: "Drag Backs / V-Pulls",
+    category: "Ball Mastery",
+    level: "Intermediate",
+    dose: "45 sec",
+    equipment: "Ball",
+    metric: "touches",
+    source: SOURCE_LABELS.closeControl,
+    tpm: 80,
+    cues: ["Pull with the sole", "Open the hips instantly", "Exit at 90 or 180 degrees"],
+  },
+  {
+    id: "stepovers-accelerate",
+    name: "Step Overs & Accelerate",
+    category: "Ball Mastery",
+    level: "Intermediate",
+    dose: "60 sec",
+    equipment: "Ball",
+    metric: "touches",
+    source: SOURCE_LABELS.closeControl,
+    tpm: 70,
+    cues: ["Drop the shoulder low", "Sell the feint", "Explode with an outside exit touch"],
+  },
+  {
+    id: "croqueta-right-drive",
+    name: "Croqueta to Right-Foot Drive",
+    category: "Ball Mastery",
+    level: "Intermediate",
+    dose: "60 sec",
+    equipment: "Ball",
+    metric: "touches",
+    source: SOURCE_LABELS.closeControl,
+    tpm: 85,
+    cues: ["Shift across the body", "Push forward with the right instep", "Accelerate seamlessly"],
+  },
+  {
+    id: "croqueta-left-drive",
+    name: "Croqueta to Left-Foot Drive",
+    category: "Ball Mastery",
+    level: "Intermediate",
+    dose: "60 sec",
+    equipment: "Ball",
+    metric: "touches",
+    source: SOURCE_LABELS.closeControl,
+    tpm: 85,
+    cues: ["Shift across the body", "Push forward with the left instep", "Make the weak-side transition clean"],
+  },
+  {
+    id: "ball-roll-right-drive",
+    name: "Ball Roll to Right-Foot Drive",
+    category: "Ball Mastery",
+    level: "Intermediate",
+    dose: "60 sec",
+    equipment: "Ball",
+    metric: "touches",
+    source: SOURCE_LABELS.closeControl,
+    tpm: 80,
+    cues: ["Roll across defender momentum", "Drive with the right instep", "Get out of the move quickly"],
+  },
+  {
+    id: "ball-roll-left-drive",
+    name: "Ball Roll to Left-Foot Drive",
+    category: "Ball Mastery",
+    level: "Intermediate",
+    dose: "60 sec",
+    equipment: "Ball",
+    metric: "touches",
+    source: SOURCE_LABELS.closeControl,
+    tpm: 80,
+    cues: ["Roll across defender momentum", "Drive with the left instep", "Keep the ball attached through exit"],
+  },
+  {
+    id: "alternating-feet-juggling",
+    name: "Alternating Feet Juggling",
+    category: "Ball Mastery",
+    level: "Intermediate",
+    dose: "5 min",
+    equipment: "Ball",
+    metric: "touches",
+    source: SOURCE_LABELS.advancedTouch,
+    tpm: 100,
+    cues: ["Lock the ankle", "Strike with the laces", "Stay balanced between contacts"],
+  },
+  {
+    id: "thigh-foot-juggling",
+    name: "Thigh-Foot Juggling Combo",
+    category: "Ball Mastery",
+    level: "Intermediate",
+    dose: "5 min",
+    equipment: "Ball",
+    metric: "touches",
+    source: SOURCE_LABELS.advancedTouch,
+    tpm: 80,
+    cues: ["Cushion the thigh drop", "Set the next foot touch", "Keep the ball below chest height"],
+  },
+  {
+    id: "one-touch-wall",
+    name: "1-Touch Wall Passing",
+    category: "Ball Mastery",
+    level: "All Levels",
+    dose: "5 min",
+    equipment: "Wall and ball",
+    metric: "touches",
+    source: SOURCE_LABELS.advancedTouch,
+    tpm: 60,
+    cues: ["Strike firmly with the inside foot", "Keep toes pointed up", "Alternate right and left"],
+  },
+  {
+    id: "two-touch-wall",
+    name: "2-Touch Wall Receive Across Body",
+    category: "Ball Mastery",
+    level: "Intermediate",
+    dose: "5 min",
+    equipment: "Wall and ball",
+    metric: "touches",
+    source: SOURCE_LABELS.advancedTouch,
+    tpm: 40,
+    cues: ["Receive across the body", "Use the back foot", "Pass with the opposite foot"],
+  },
+  {
+    id: "linear-cone-weave",
+    name: "Linear Cone Weave",
+    category: "Ball Mastery",
+    level: "Intermediate",
+    dose: "4 min",
+    equipment: "Cones and ball",
+    metric: "touches",
+    source: SOURCE_LABELS.advancedTouch,
+    tpm: 90,
+    cues: ["Keep the head up", "Use inside and outside surfaces", "Accelerate out of the last cone"],
+  },
+  {
     id: "hill-repeats",
     name: "Hill Repeats",
     category: "Recovery",
@@ -662,6 +868,50 @@ const WEEKLY_PLAN = [
   },
 ];
 
+const DEFAULT_ATHLETES = [
+  { id: "ath-jayden", name: "Jayden", email: "", group: "Attackers", status: "Active", notes: "First-step and close-control focus" },
+  { id: "ath-mia", name: "Mia", email: "", group: "Midfield", status: "Active", notes: "Tempo, scanning, wall work" },
+  { id: "ath-noah", name: "Noah", email: "", group: "Defenders", status: "Active", notes: "Lateral agility and recovery runs" },
+];
+
+const DEFAULT_PROGRAMS = [
+  {
+    id: "prog-first-step",
+    name: "First-Step Explosion",
+    focus: "Acceleration",
+    notes: "High-quality sprint mechanics, full rest, clean first three steps.",
+    drills: ["wall-drill", "falling-start", "sled-pull", "two-point-10"],
+  },
+  {
+    id: "prog-close-control",
+    name: "Close-Control Touch Block",
+    focus: "Ball Mastery",
+    notes: "Built from the attached close-control and technical-touch trackers.",
+    drills: ["right-foot-only-close", "left-foot-only-close", "inside-pendulum", "croquetas-lr", "ball-rolls-lr"],
+  },
+  {
+    id: "prog-agility-react",
+    name: "Reactive Agility Group",
+    focus: "Agility",
+    notes: "Change of direction with a reaction component for small groups.",
+    drills: ["mirror-drill", "short-lateral-shuttle", "five-ten-five", "skater-jumps"],
+  },
+];
+
+const DEFAULT_CALENDAR_EVENTS = [
+  {
+    id: "event-demo",
+    date: new Date().toISOString().slice(0, 10),
+    time: "17:30",
+    title: "Squad Speed + Touch Session",
+    programId: "prog-close-control",
+    targetType: "squad",
+    targetId: "squad",
+    location: "Main field",
+    notes: "Bring ball, water, cleats, and flats.",
+  },
+];
+
 const BENCHMARKS = [
   { id: "ten-yard", name: "10 Yard Start", category: "Acceleration", unit: "sec", lowerBetter: true, source: SOURCE_LABELS.overtime },
   { id: "flying-sprint", name: "Flying Sprint", category: "Max Velocity", unit: "sec", lowerBetter: true, source: SOURCE_LABELS.workbook },
@@ -676,7 +926,10 @@ const BENCHMARKS = [
 
 const TABS = [
   { key: "today", label: "Today" },
-  { key: "program", label: "Program" },
+  { key: "team", label: "Team" },
+  { key: "program", label: "Programs" },
+  { key: "calendar", label: "Calendar" },
+  { key: "email", label: "Email" },
   { key: "drills", label: "Drills" },
   { key: "log", label: "Log" },
   { key: "tests", label: "Tests" },
@@ -729,6 +982,65 @@ function sourceCount(log, days = 7) {
   return log.filter((x) => x.date >= cut).length;
 }
 
+function drillName(id) {
+  return DRILLS.find((drill) => drill.id === id)?.name || "Unknown drill";
+}
+
+function getProgram(programs, programId) {
+  return programs.find((program) => program.id === programId) || programs[0];
+}
+
+function getProgramDrills(program) {
+  if (!program) return [];
+  return (program.drills || []).map((id) => DRILLS.find((drill) => drill.id === id)).filter(Boolean);
+}
+
+function estimateProgramMinutes(program) {
+  const count = (program?.drills || []).length;
+  return Math.max(20, count * 6);
+}
+
+function groupsFromAthletes(athletes) {
+  return Array.from(new Set(athletes.map((athlete) => athlete.group).filter(Boolean))).sort();
+}
+
+function eventRecipientAthletes(event, athletes) {
+  if (!event) return [];
+  if (event.targetType === "athlete") return athletes.filter((athlete) => athlete.id === event.targetId);
+  if (event.targetType === "group") return athletes.filter((athlete) => athlete.group === event.targetId);
+  return athletes.filter((athlete) => athlete.status !== "Inactive");
+}
+
+function eventTargetLabel(event, athletes) {
+  if (!event) return "No target";
+  if (event.targetType === "athlete") return athletes.find((athlete) => athlete.id === event.targetId)?.name || "Athlete";
+  if (event.targetType === "group") return event.targetId || "Group";
+  return "Whole squad";
+}
+
+function buildSessionEmail(event, programs, athletes) {
+  const program = getProgram(programs, event?.programId);
+  const drillLines = getProgramDrills(program).map((drill, index) => `${index + 1}. ${drill.name} - ${drill.dose}`);
+  const recipients = eventRecipientAthletes(event, athletes).filter((athlete) => athlete.email);
+  const subject = `${event?.title || "Training session"} - ${event?.date || ""}`;
+  const body = [
+    `Session: ${event?.title || "Training session"}`,
+    `Date/time: ${event?.date || "TBD"} ${event?.time || ""}`.trim(),
+    `Location: ${event?.location || "TBD"}`,
+    `Group: ${eventTargetLabel(event, athletes)}`,
+    "",
+    `Program: ${program?.name || "No program selected"}`,
+    program?.notes ? `Focus: ${program.notes}` : "",
+    "",
+    "Workout:",
+    ...(drillLines.length ? drillLines : ["No drills selected yet."]),
+    "",
+    event?.notes ? `Notes: ${event.notes}` : "",
+  ].filter((line) => line !== "").join("\n");
+  const mailto = `mailto:${recipients.map((athlete) => athlete.email).join(",")}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  return { subject, body, recipients, mailto };
+}
+
 export default function SpeedDesk() {
   const [tab, setTab] = useState("today");
   const [selectedDay, setSelectedDay] = useState(currentDayName());
@@ -736,6 +1048,9 @@ export default function SpeedDesk() {
   const [drillQuery, setDrillQuery] = useState("");
   const [category, setCategory] = useState("All");
   const [favorites, setFavorites] = useState([]);
+  const [athletes, setAthletes] = useState(DEFAULT_ATHLETES);
+  const [programs, setPrograms] = useState(DEFAULT_PROGRAMS);
+  const [calendarEvents, setCalendarEvents] = useState(DEFAULT_CALENDAR_EVENTS);
   const [sessionLog, setSessionLog] = useState([]);
   const [speedLog, setSpeedLog] = useState([]);
   const [testLog, setTestLog] = useState([]);
@@ -749,6 +1064,9 @@ export default function SpeedDesk() {
         if (record?.value) {
           const saved = JSON.parse(record.value);
           setFavorites(saved.favorites || []);
+          setAthletes(saved.athletes?.length ? saved.athletes : DEFAULT_ATHLETES);
+          setPrograms(saved.programs?.length ? saved.programs : DEFAULT_PROGRAMS);
+          setCalendarEvents(saved.calendarEvents?.length ? saved.calendarEvents : DEFAULT_CALENDAR_EVENTS);
           setSessionLog(saved.sessionLog || []);
           setSpeedLog(saved.speedLog || []);
           setTestLog(saved.testLog || []);
@@ -766,7 +1084,17 @@ export default function SpeedDesk() {
     try {
       await window.storage.set(
         STORAGE_KEY,
-        JSON.stringify({ favorites, sessionLog, speedLog, testLog, selectedDay, readiness })
+        JSON.stringify({
+          favorites,
+          athletes,
+          programs,
+          calendarEvents,
+          sessionLog,
+          speedLog,
+          testLog,
+          selectedDay,
+          readiness,
+        })
       );
       setFlash(note);
       setTimeout(() => setFlash(""), 1500);
@@ -779,7 +1107,7 @@ export default function SpeedDesk() {
   useEffect(() => {
     if (loaded) persist("Saved");
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [favorites, sessionLog, speedLog, testLog, selectedDay, readiness]);
+  }, [favorites, athletes, programs, calendarEvents, sessionLog, speedLog, testLog, selectedDay, readiness]);
 
   const toggleFavorite = (id) => {
     setFavorites((current) => (current.includes(id) ? current.filter((x) => x !== id) : [id, ...current]));
@@ -788,6 +1116,9 @@ export default function SpeedDesk() {
   const exportData = () => {
     const data = {
       favorites,
+      athletes,
+      programs,
+      calendarEvents,
       sessionLog,
       speedLog,
       testLog,
@@ -816,6 +1147,9 @@ export default function SpeedDesk() {
       try {
         const saved = JSON.parse(reader.result);
         setFavorites(saved.favorites || []);
+        setAthletes(saved.athletes?.length ? saved.athletes : DEFAULT_ATHLETES);
+        setPrograms(saved.programs?.length ? saved.programs : DEFAULT_PROGRAMS);
+        setCalendarEvents(saved.calendarEvents?.length ? saved.calendarEvents : DEFAULT_CALENDAR_EVENTS);
         setSessionLog(saved.sessionLog || []);
         setSpeedLog(saved.speedLog || []);
         setTestLog(saved.testLog || []);
@@ -875,7 +1209,17 @@ export default function SpeedDesk() {
             importData={importData}
           />
         )}
-        {tab === "program" && <Program drillById={drillById} />}
+        {tab === "team" && <Team athletes={athletes} setAthletes={setAthletes} />}
+        {tab === "program" && <Program drillById={drillById} programs={programs} setPrograms={setPrograms} />}
+        {tab === "calendar" && (
+          <Calendar
+            athletes={athletes}
+            programs={programs}
+            calendarEvents={calendarEvents}
+            setCalendarEvents={setCalendarEvents}
+          />
+        )}
+        {tab === "email" && <EmailCenter athletes={athletes} programs={programs} calendarEvents={calendarEvents} />}
         {tab === "drills" && (
           <Drills
             query={drillQuery}
@@ -1022,9 +1366,179 @@ function Today({
   );
 }
 
-function Program({ drillById }) {
+function Team({ athletes, setAthletes }) {
+  const [athlete, setAthlete] = useState({ name: "", email: "", group: "Attackers", status: "Active", notes: "" });
+  const groups = groupsFromAthletes(athletes);
+
+  const addAthlete = () => {
+    if (!athlete.name.trim()) return;
+    setAthletes([{ id: uid(), ...athlete, name: athlete.name.trim(), email: athlete.email.trim() }, ...athletes]);
+    setAthlete({ name: "", email: "", group: athlete.group || "Attackers", status: "Active", notes: "" });
+  };
+
+  const updateAthlete = (id, field, value) => {
+    setAthletes(athletes.map((item) => (item.id === id ? { ...item, [field]: value } : item)));
+  };
+
+  const deleteAthlete = (id) => {
+    setAthletes(athletes.filter((item) => item.id !== id));
+  };
+
   return (
     <>
+      <Panel title="Players" sub="Manage athlete emails, groups, status, and session notes">
+        <div className="form-grid">
+          <Field label="Name">
+            <input className="input" value={athlete.name} onChange={(event) => setAthlete({ ...athlete, name: event.target.value })} placeholder="Player name" />
+          </Field>
+          <Field label="Email">
+            <input className="input" value={athlete.email} onChange={(event) => setAthlete({ ...athlete, email: event.target.value })} placeholder="player@email.com" />
+          </Field>
+          <Field label="Group">
+            <input className="input" value={athlete.group} onChange={(event) => setAthlete({ ...athlete, group: event.target.value })} placeholder="Attackers" />
+          </Field>
+          <Field label="Status">
+            <select className="input" value={athlete.status} onChange={(event) => setAthlete({ ...athlete, status: event.target.value })}>
+              <option>Active</option>
+              <option>Injured</option>
+              <option>Inactive</option>
+            </select>
+          </Field>
+        </div>
+        <textarea
+          className="text-area"
+          value={athlete.notes}
+          onChange={(event) => setAthlete({ ...athlete, notes: event.target.value })}
+          placeholder="Development focus, parent contact notes, restrictions"
+        />
+        <SaveBtn onClick={addAthlete} label="Add Player" />
+      </Panel>
+
+      <Panel title="Squad Board" sub={`${athletes.length} players - ${groups.length || 0} groups`}>
+        {athletes.length === 0 && <Empty text="Add a player to start building group workouts." />}
+        {athletes.map((item) => (
+          <div className="coach-card" key={item.id}>
+            <div className="coach-card-head">
+              <div>
+                <div className="item-title">{item.name || "Unnamed player"}</div>
+                <div className="muted">{item.email || "No email yet"}</div>
+              </div>
+              <DelBtn onClick={() => deleteAthlete(item.id)} />
+            </div>
+            <div className="form-grid compact">
+              <Field label="Group">
+                <input className="input" value={item.group} onChange={(event) => updateAthlete(item.id, "group", event.target.value)} />
+              </Field>
+              <Field label="Status">
+                <select className="input" value={item.status} onChange={(event) => updateAthlete(item.id, "status", event.target.value)}>
+                  <option>Active</option>
+                  <option>Injured</option>
+                  <option>Inactive</option>
+                </select>
+              </Field>
+            </div>
+            <textarea
+              className="text-area small"
+              value={item.notes || ""}
+              onChange={(event) => updateAthlete(item.id, "notes", event.target.value)}
+              placeholder="Player notes"
+            />
+          </div>
+        ))}
+      </Panel>
+    </>
+  );
+}
+
+function Program({ drillById, programs, setPrograms }) {
+  const [draft, setDraft] = useState({
+    name: "New Group Workout",
+    focus: "Ball Mastery",
+    notes: "Session objective, coaching points, and constraints.",
+    drills: ["right-foot-only-close", "inside-pendulum", "croquetas-lr"],
+  });
+
+  const addProgram = () => {
+    if (!draft.name.trim()) return;
+    setPrograms([{ id: uid(), ...draft, name: draft.name.trim(), drills: draft.drills.filter(Boolean) }, ...programs]);
+  };
+
+  const deleteProgram = (id) => {
+    setPrograms(programs.filter((program) => program.id !== id));
+  };
+
+  const setDrillAt = (index, drillId) => {
+    const next = [...draft.drills];
+    next[index] = drillId;
+    setDraft({ ...draft, drills: next });
+  };
+
+  const removeDraftDrill = (index) => {
+    setDraft({ ...draft, drills: draft.drills.filter((_, drillIndex) => drillIndex !== index) });
+  };
+
+  return (
+    <>
+      <Panel title="Build Program" sub="Create a reusable training session from library drills">
+        <div className="form-grid">
+          <Field label="Program name">
+            <input className="input" value={draft.name} onChange={(event) => setDraft({ ...draft, name: event.target.value })} />
+          </Field>
+          <Field label="Focus">
+            <select className="input" value={draft.focus} onChange={(event) => setDraft({ ...draft, focus: event.target.value })}>
+              {CATEGORIES.map((item) => (
+                <option key={item}>{item}</option>
+              ))}
+            </select>
+          </Field>
+        </div>
+        <textarea className="text-area" value={draft.notes} onChange={(event) => setDraft({ ...draft, notes: event.target.value })} />
+        <div className="builder-list">
+          {draft.drills.map((drillId, index) => (
+            <div className="builder-row" key={`${drillId}-${index}`}>
+              <select className="input" value={drillId} onChange={(event) => setDrillAt(index, event.target.value)}>
+                {DRILLS.map((drill) => (
+                  <option key={drill.id} value={drill.id}>{drill.name}</option>
+                ))}
+              </select>
+              <button className="ghost-btn small-btn" type="button" onClick={() => removeDraftDrill(index)}>Remove</button>
+            </div>
+          ))}
+        </div>
+        <div className="button-row">
+          <button className="ghost-btn" type="button" onClick={() => setDraft({ ...draft, drills: [...draft.drills, DRILLS[0].id] })}>
+            Add Drill
+          </button>
+          <button className="ghost-btn gold" type="button" onClick={addProgram}>
+            Save Program
+          </button>
+        </div>
+      </Panel>
+
+      <Panel title="Saved Programs" sub={`${programs.length} reusable workouts`}>
+        {programs.map((program) => (
+          <div className="coach-card" key={program.id}>
+            <div className="coach-card-head">
+              <div>
+                <div className="item-title">{program.name}</div>
+                <div className="muted">{program.focus} - about {estimateProgramMinutes(program)} min</div>
+              </div>
+              {!program.id.startsWith("prog-") && <DelBtn onClick={() => deleteProgram(program.id)} />}
+            </div>
+            <p className="muted tight">{program.notes}</p>
+            <div className="mini-program-list">
+              {getProgramDrills(program).map((drill, index) => (
+                <div className="mini-row" key={`${program.id}-${drill.id}-${index}`}>
+                  <Badge category={drill.category} />
+                  <span>{drill.name}</span>
+                  <strong>{drill.dose}</strong>
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </Panel>
+
       <Panel title="Weekly Plan" sub="Workbook structure, tightened into a repeatable training week">
         <div className="program-grid">
           {WEEKLY_PLAN.map((day) => (
@@ -1075,6 +1589,145 @@ function Program({ drillById }) {
             </div>
           );
         })}
+      </Panel>
+    </>
+  );
+}
+
+function Calendar({ athletes, programs, calendarEvents, setCalendarEvents }) {
+  const groups = groupsFromAthletes(athletes);
+  const [event, setEvent] = useState({
+    date: today(),
+    time: "17:30",
+    title: "Training Session",
+    programId: programs[0]?.id || "",
+    targetType: "squad",
+    targetId: "squad",
+    location: "Main field",
+    notes: "",
+  });
+
+  const targetOptions = event.targetType === "athlete" ? athletes : groups.map((group) => ({ id: group, name: group }));
+
+  const addEvent = () => {
+    if (!event.title.trim()) return;
+    setCalendarEvents([{ id: uid(), ...event, title: event.title.trim() }, ...calendarEvents]);
+  };
+
+  const deleteEvent = (id) => {
+    setCalendarEvents(calendarEvents.filter((item) => item.id !== id));
+  };
+
+  return (
+    <>
+      <Panel title="Schedule Workout" sub="Assign a program to one player, a group, or the whole squad">
+        <div className="form-grid">
+          <Field label="Date">
+            <input className="input" type="date" value={event.date} onChange={(change) => setEvent({ ...event, date: change.target.value })} />
+          </Field>
+          <Field label="Time">
+            <input className="input" type="time" value={event.time} onChange={(change) => setEvent({ ...event, time: change.target.value })} />
+          </Field>
+          <Field label="Title">
+            <input className="input" value={event.title} onChange={(change) => setEvent({ ...event, title: change.target.value })} />
+          </Field>
+          <Field label="Location">
+            <input className="input" value={event.location} onChange={(change) => setEvent({ ...event, location: change.target.value })} />
+          </Field>
+          <Field label="Program">
+            <select className="input" value={event.programId} onChange={(change) => setEvent({ ...event, programId: change.target.value })}>
+              {programs.map((program) => (
+                <option key={program.id} value={program.id}>{program.name}</option>
+              ))}
+            </select>
+          </Field>
+          <Field label="Send to">
+            <select
+              className="input"
+              value={event.targetType}
+              onChange={(change) => setEvent({ ...event, targetType: change.target.value, targetId: change.target.value === "squad" ? "squad" : "" })}
+            >
+              <option value="squad">Whole squad</option>
+              <option value="group">Group</option>
+              <option value="athlete">Player</option>
+            </select>
+          </Field>
+          {event.targetType !== "squad" && (
+            <Field label={event.targetType === "athlete" ? "Player" : "Group"}>
+              <select className="input" value={event.targetId} onChange={(change) => setEvent({ ...event, targetId: change.target.value })}>
+                <option value="">Choose...</option>
+                {targetOptions.map((option) => (
+                  <option key={option.id} value={option.id}>{option.name}</option>
+                ))}
+              </select>
+            </Field>
+          )}
+        </div>
+        <textarea className="text-area" value={event.notes} onChange={(change) => setEvent({ ...event, notes: change.target.value })} placeholder="Arrival notes, equipment, field number" />
+        <SaveBtn onClick={addEvent} label="Schedule Session" />
+      </Panel>
+
+      <Panel title="Calendar" sub={`${calendarEvents.length} scheduled sessions`}>
+        {calendarEvents.length === 0 && <Empty text="Schedule a program to build the team calendar." />}
+        {calendarEvents.map((item) => {
+          const program = getProgram(programs, item.programId);
+          return (
+            <div className="coach-card" key={item.id}>
+              <div className="coach-card-head">
+                <div>
+                  <div className="item-title">{item.title}</div>
+                  <div className="muted">{item.date} {item.time} - {item.location}</div>
+                </div>
+                <DelBtn onClick={() => deleteEvent(item.id)} />
+              </div>
+              <div className="detail-row">
+                <span>{program?.name || "No program"}</span>
+                <span>{eventTargetLabel(item, athletes)}</span>
+                <span>{eventRecipientAthletes(item, athletes).filter((athlete) => athlete.email).length} emails</span>
+              </div>
+              {item.notes && <div className="cue-line">{item.notes}</div>}
+            </div>
+          );
+        })}
+      </Panel>
+    </>
+  );
+}
+
+function EmailCenter({ athletes, programs, calendarEvents }) {
+  const [eventId, setEventId] = useState(calendarEvents[0]?.id || "");
+  const selected = calendarEvents.find((event) => event.id === eventId) || calendarEvents[0];
+  const email = selected ? buildSessionEmail(selected, programs, athletes) : null;
+
+  return (
+    <>
+      <Panel title="Session Email" sub="Generate a workout email from your calendar">
+        {calendarEvents.length === 0 ? (
+          <Empty text="Schedule a session first, then email it from here." />
+        ) : (
+          <>
+            <Field label="Scheduled session">
+              <select className="input" value={selected?.id || ""} onChange={(event) => setEventId(event.target.value)}>
+                {calendarEvents.map((item) => (
+                  <option key={item.id} value={item.id}>{item.date} - {item.title}</option>
+                ))}
+              </select>
+            </Field>
+            <div className="metric-grid">
+              <Metric label="Recipients" value={email.recipients.length} accent="green" />
+              <Metric label="Drills" value={getProgramDrills(getProgram(programs, selected.programId)).length} accent="orange" />
+              <Metric label="Minutes" value={estimateProgramMinutes(getProgram(programs, selected.programId))} accent="gold" />
+            </div>
+            {email.recipients.length === 0 && <div className="callout">Add player emails in Team before sending.</div>}
+            <Field label="Subject">
+              <input className="input" value={email.subject} readOnly />
+            </Field>
+            <Field label="Email body">
+              <textarea className="text-area email-body" value={email.body} readOnly />
+            </Field>
+            <a className="save-btn link-btn" href={email.mailto}>Open Email Draft</a>
+          </>
+        )}
       </Panel>
     </>
   );

@@ -574,6 +574,65 @@ textarea {
   padding: 9px;
 }
 
+.coach-card {
+  background: #101611;
+  border: 1px solid #253128;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  padding: 12px;
+}
+
+.coach-card-head {
+  align-items: center;
+  display: flex;
+  gap: 10px;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.form-grid.compact {
+  margin-bottom: 10px;
+}
+
+.text-area.small {
+  min-height: 62px;
+}
+
+.builder-list {
+  display: grid;
+  gap: 8px;
+  margin: 12px 0;
+}
+
+.builder-row {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: 1fr auto;
+}
+
+.small-btn {
+  align-self: stretch;
+  flex: 0 0 auto;
+  padding-left: 12px;
+  padding-right: 12px;
+}
+
+.mini-program-list {
+  display: grid;
+  gap: 0;
+}
+
+.email-body {
+  min-height: 260px;
+  white-space: pre-wrap;
+}
+
+.link-btn {
+  display: block;
+  text-align: center;
+  text-decoration: none;
+}
+
 .history-row {
   align-items: center;
   display: grid;
@@ -668,6 +727,10 @@ textarea {
 
   .history-row .del-btn {
     grid-column: 2;
+  }
+
+  .builder-row {
+    grid-template-columns: 1fr;
   }
 }
 

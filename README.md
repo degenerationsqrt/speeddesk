@@ -1,6 +1,14 @@
 # SpeedDesk
 
-SpeedDesk is a local React app for speed, agility, plyometric, and soccer drill planning. It is modeled after IronDesk's mobile-first local journal, but uses the speed-folder workbooks, PDFs, and DOCX as its drill/program source material.
+SpeedDesk is a local React app for speed, agility, plyometric, and soccer drill planning. It is modeled after IronDesk's mobile-first local journal, but uses the speed-folder workbooks, PDFs, DOCX, and technical-touch trackers as its drill/program source material.
+
+## Current Features
+
+- Player roster with emails, groups, status, and notes.
+- Program builder for reusable individual, group, or squad workouts.
+- Calendar scheduling for players, groups, or the whole squad.
+- Email draft generation for scheduled sessions with location and workout details.
+- Drill library, speed logs, benchmark tests, trends, and local backup/restore.
 
 ## Run Locally
 
