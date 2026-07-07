@@ -68,13 +68,21 @@ textarea {
 }
 
 .brand {
-  font-size: 30px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 7px;
+  font-size: 26px;
   font-weight: 700;
   line-height: 1;
 }
 
 .brand span {
   color: #f97316;
+}
+
+.brand strong {
+  color: #f6c453;
+  font: inherit;
 }
 
 .tagline {

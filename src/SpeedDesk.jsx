@@ -936,7 +936,7 @@ const TABS = [
   { key: "trends", label: "Trends" },
 ];
 
-const STORAGE_KEY = "speeddesk:v1";
+const STORAGE_KEY = "apex-predator-elite:v1";
 
 const today = () => new Date().toISOString().slice(0, 10);
 const uid = () => Math.random().toString(36).slice(2, 9);
@@ -1124,14 +1124,14 @@ export default function SpeedDesk() {
       testLog,
       selectedDay,
       readiness,
-      _app: "SpeedDesk",
+      _app: "Apex Predator Elite",
       _exported: new Date().toISOString(),
     };
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `speeddesk-backup-${today()}.json`;
+    a.download = `apex-predator-elite-backup-${today()}.json`;
     document.body.appendChild(a);
     a.click();
     a.remove();
@@ -1174,7 +1174,7 @@ export default function SpeedDesk() {
       <header className="topbar">
         <div className="brand-row">
           <div>
-            <div className="brand">SPEED<span>DESK</span></div>
+            <div className="brand">APEX<span>PREDATOR</span><strong>ELITE</strong></div>
             <div className="tagline">Speed, agility, plyos, ball mastery</div>
           </div>
           {flash && <div className="flash">{flash}</div>}
