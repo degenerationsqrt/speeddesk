@@ -1,0 +1,1348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Apex Predator Elite</title>
+<style>
+:root{
+  --bg:#0b0f0d; --panel:#111613; --panel2:#161d19; --border:#232b27;
+  --text:#eef2ef; --muted:#8b9890; --accent:#7cf09c; --accent2:#ffb454;
+  --danger:#ff6b6b; --radius:10px;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  background:var(--bg); color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  font-size:14px; line-height:1.5;
+}
+a{color:var(--accent);}
+h1,h2,h3,h4{margin:0 0 8px 0; font-weight:700; letter-spacing:.2px;}
+.app{display:flex; min-height:100vh;}
+/* Sidebar */
+.sidebar{
+  width:220px; flex:0 0 220px; background:var(--panel); border-right:1px solid var(--border);
+  display:flex; flex-direction:column; padding:18px 12px; position:sticky; top:0; height:100vh;
+}
+.brand{display:flex; align-items:center; gap:10px; padding:4px 8px 18px 8px;}
+.brand .mark{
+  width:34px; height:34px; border-radius:9px; background:linear-gradient(135deg,var(--accent),#3fa86a);
+  display:flex; align-items:center; justify-content:center; font-weight:900; color:#06140a; font-size:16px;
+}
+.brand .name{font-size:15px; font-weight:800; line-height:1.1;}
+.brand .sub{font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:1px;}
+nav.tabs{display:flex; flex-direction:column; gap:2px; margin-top:6px;}
+nav.tabs button{
+  text-align:left; background:transparent; border:none; color:var(--muted); padding:10px 12px;
+  border-radius:8px; font-size:13.5px; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:10px;
+}
+nav.tabs button:hover{background:var(--panel2); color:var(--text);}
+nav.tabs button.active{background:rgba(124,240,156,0.12); color:var(--accent);}
+nav.tabs .icon{width:18px; text-align:center; font-size:14px;}
+.sidebar-foot{margin-top:auto; padding:10px 8px; font-size:11px; color:var(--muted);}
+.sidebar-foot button{
+  width:100%; margin-top:6px; background:var(--panel2); border:1px solid var(--border); color:var(--muted);
+  padding:7px; border-radius:7px; font-size:11.5px; cursor:pointer;
+}
+.sidebar-foot button:hover{color:var(--text); border-color:var(--accent);}
+/* Main */
+main{flex:1; min-width:0; padding:28px 34px; max-width:1180px;}
+.page{display:none;}
+.page.active{display:block;}
+.page-head{display:flex; align-items:flex-end; justify-content:space-between; margin-bottom:22px; flex-wrap:wrap; gap:12px;}
+.page-head h1{font-size:22px;}
+.page-head .desc{color:var(--muted); font-size:13px; margin-top:2px;}
+.btn{
+  background:var(--accent); color:#06140a; border:none; padding:9px 16px; border-radius:8px;
+  font-weight:700; font-size:13px; cursor:pointer; display:inline-flex; align-items:center; gap:6px;
+}
+.btn:hover{filter:brightness(1.08);}
+.btn.secondary{background:var(--panel2); color:var(--text); border:1px solid var(--border);}
+.btn.secondary:hover{border-color:var(--accent);}
+.btn.danger{background:rgba(255,107,107,0.12); color:var(--danger); border:1px solid rgba(255,107,107,0.3);}
+.btn.small{padding:5px 10px; font-size:12px;}
+.btn.icon-only{padding:6px 9px;}
+.btn[disabled]{opacity:.4; cursor:not-allowed;}
+/* Cards / grid */
+.grid{display:grid; gap:14px;}
+.grid.cols-4{grid-template-columns:repeat(4,1fr);}
+.grid.cols-3{grid-template-columns:repeat(3,1fr);}
+.grid.cols-2{grid-template-columns:repeat(2,1fr);}
+@media(max-width:1000px){.grid.cols-4{grid-template-columns:repeat(2,1fr);} .grid.cols-3{grid-template-columns:repeat(2,1fr);}}
+.card{background:var(--panel); border:1px solid var(--border); border-radius:var(--radius); padding:16px;}
+.stat-card .num{font-size:26px; font-weight:800; color:var(--accent);}
+.stat-card .label{color:var(--muted); font-size:12px; text-transform:uppercase; letter-spacing:.5px; margin-top:2px;}
+.section{margin-bottom:30px;}
+.section-title{display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;}
+.section-title h2{font-size:15px; color:var(--text);}
+.empty{color:var(--muted); font-size:13px; padding:18px; text-align:center; border:1px dashed var(--border); border-radius:var(--radius);}
+/* Tags */
+.tag{display:inline-block; padding:2px 8px; border-radius:20px; font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:.4px;}
+.tag.cat-Acceleration{background:rgba(124,240,156,.15); color:#7cf09c;}
+.tag.cat-MaxVelocity{background:rgba(124,200,240,.15); color:#7cc8f0;}
+.tag.cat-Agility{background:rgba(255,180,84,.15); color:#ffb454;}
+.tag.cat-PlyoLower{background:rgba(255,140,196,.15); color:#ff8cc4;}
+.tag.cat-PlyoUpper{background:rgba(196,140,255,.15); color:#c48cff;}
+.tag.cat-BallMastery{background:rgba(255,221,87,.15); color:#ffdd57;}
+.tag.cat-Strength{background:rgba(255,107,107,.15); color:#ff6b6b;}
+.tag.cat-Recovery{background:rgba(140,255,221,.15); color:#8cffdd;}
+.tag.cat-Custom{background:rgba(180,180,180,.15); color:#c8c8c8;}
+/* Drill library */
+.toolbar{display:flex; gap:10px; margin-bottom:16px; flex-wrap:wrap; align-items:center;}
+input[type=text],input[type=number],input[type=date],input[type=time],select,textarea{
+  background:var(--panel2); border:1px solid var(--border); color:var(--text); border-radius:7px;
+  padding:8px 10px; font-size:13px; font-family:inherit;
+}
+textarea{width:100%; resize:vertical;}
+.toolbar input[type=text]{flex:1; min-width:180px;}
+.drill-card{cursor:pointer; transition:border-color .12s;}
+.drill-card:hover{border-color:var(--accent);}
+.drill-card h3{font-size:14px; margin-bottom:6px;}
+.drill-card .equip{color:var(--muted); font-size:11.5px; margin-top:8px;}
+.drill-card .desc-snip{color:var(--muted); font-size:12px; margin-top:6px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;}
+/* Modal */
+.modal-overlay{
+  position:fixed; inset:0; background:rgba(0,0,0,.6); display:none; align-items:center; justify-content:center;
+  z-index:100; padding:20px;
+}
+.modal-overlay.open{display:flex;}
+.modal{
+  background:var(--panel); border:1px solid var(--border); border-radius:12px; width:100%; max-width:560px;
+  max-height:88vh; overflow-y:auto; padding:22px;
+}
+.modal.wide{max-width:760px;}
+.modal-head{display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:14px;}
+.modal-close{background:transparent; border:none; color:var(--muted); font-size:20px; cursor:pointer; line-height:1;}
+.modal-close:hover{color:var(--text);}
+.field{margin-bottom:13px;}
+.field label{display:block; font-size:12px; color:var(--muted); margin-bottom:5px; font-weight:600;}
+.field input,.field select,.field textarea{width:100%;}
+.field-row{display:flex; gap:10px;}
+.field-row .field{flex:1;}
+.modal-actions{display:flex; justify-content:flex-end; gap:8px; margin-top:18px;}
+/* Drill detail */
+.drill-detail .meta-row{display:flex; gap:8px; margin-bottom:12px; flex-wrap:wrap;}
+.drill-detail .desc{color:var(--text); font-size:13.5px; margin:12px 0;}
+.drill-detail .cue{background:var(--panel2); border-left:3px solid var(--accent); padding:10px 12px; border-radius:6px; font-size:12.5px; color:var(--muted); margin-top:10px;}
+.drill-detail .default-dose{font-size:12px; color:var(--accent2); margin-top:10px; font-weight:600;}
+/* Program blocks */
+.block-row{
+  display:grid; grid-template-columns:1.6fr .6fr .7fr .8fr .7fr 32px; gap:8px; align-items:center;
+  padding:8px 0; border-bottom:1px solid var(--border);
+}
+.block-row:last-child{border-bottom:none;}
+.block-row .bname{font-size:12.5px; font-weight:600;}
+.block-row select,.block-row input{width:100%; font-size:12px; padding:6px 8px;}
+.block-handle{display:flex; flex-direction:column; gap:2px;}
+.block-handle button{background:none; border:none; color:var(--muted); cursor:pointer; font-size:11px; padding:0;}
+.block-handle button:hover{color:var(--accent);}
+.program-card{display:flex; flex-direction:column; gap:6px;}
+.program-card .meta{color:var(--muted); font-size:12px;}
+.program-card .actions{display:flex; gap:6px; margin-top:8px;}
+/* Calendar */
+.cal-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;}
+.cal-head .month-label{font-size:16px; font-weight:700;}
+.cal-nav{display:flex; gap:6px;}
+.cal-grid{display:grid; grid-template-columns:repeat(7,1fr); gap:6px;}
+.cal-dow{text-align:center; color:var(--muted); font-size:11px; text-transform:uppercase; padding-bottom:4px;}
+.cal-day{
+  background:var(--panel); border:1px solid var(--border); border-radius:8px; min-height:78px; padding:6px;
+  cursor:pointer; position:relative; font-size:12px;
+}
+.cal-day:hover{border-color:var(--accent);}
+.cal-day.other-month{opacity:.35;}
+.cal-day.today{border-color:var(--accent2);}
+.cal-day .daynum{font-weight:700; margin-bottom:4px;}
+.cal-day .sess-pill{
+  background:rgba(124,240,156,.15); color:var(--accent); border-radius:5px; padding:2px 5px; font-size:10px;
+  margin-bottom:2px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+}
+.sess-item{
+  background:var(--panel2); border:1px solid var(--border); border-radius:8px; padding:10px 12px; margin-bottom:8px;
+  display:flex; justify-content:space-between; align-items:flex-start; gap:10px;
+}
+.sess-item.completed{opacity:.55;}
+.sess-item .sname{font-weight:700; font-size:13px;}
+.sess-item .smeta{color:var(--muted); font-size:11.5px; margin-top:3px;}
+.sess-item .sactions{display:flex; gap:5px; flex-shrink:0;}
+/* Athletes table */
+table{width:100%; border-collapse:collapse;}
+table th{text-align:left; color:var(--muted); font-size:11px; text-transform:uppercase; letter-spacing:.4px; padding:8px 10px; border-bottom:1px solid var(--border);}
+table td{padding:10px; border-bottom:1px solid var(--border); font-size:13px;}
+table tr:last-child td{border-bottom:none;}
+.checks{display:flex; flex-wrap:wrap; gap:8px; max-height:160px; overflow-y:auto; border:1px solid var(--border); border-radius:7px; padding:10px;}
+.checks label{display:flex; align-items:center; gap:6px; font-size:12.5px; background:var(--panel2); padding:5px 9px; border-radius:6px; cursor:pointer;}
+.toast{
+  position:fixed; bottom:20px; right:20px; background:var(--accent); color:#06140a; padding:11px 18px;
+  border-radius:8px; font-size:13px; font-weight:700; z-index:200; display:none; box-shadow:0 6px 18px rgba(0,0,0,.3);
+}
+.muted{color:var(--muted);}
+.flexrow{display:flex; gap:10px; align-items:center;}
+hr.sep{border:none; border-top:1px solid var(--border); margin:18px 0;}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <div class="sidebar">
+    <div class="brand">
+      <div class="mark">AX</div>
+      <div>
+        <div class="name">Apex Predator Elite</div>
+        <div class="sub">Coach Desk</div>
+      </div>
+    </div>
+    <nav class="tabs">
+      <button data-tab="dashboard" class="active"><span class="icon">&#9679;</span> Dashboard</button>
+      <button data-tab="library"><span class="icon">&#9776;</span> Drill Library</button>
+      <button data-tab="programs"><span class="icon">&#9998;</span> Programs</button>
+      <button data-tab="calendar"><span class="icon">&#128197;</span> Calendar</button>
+      <button data-tab="athletes"><span class="icon">&#128101;</span> Athletes</button>
+    </nav>
+    <div class="sidebar-foot">
+      <div id="dataSummary">-- drills loaded</div>
+      <button id="exportBtn">Export backup (.json)</button>
+      <button id="importBtn">Import backup</button>
+      <input type="file" id="importFile" accept=".json" style="display:none;">
+    </div>
+  </div>
+
+  <main>
+    <!-- DASHBOARD -->
+    <section class="page active" id="page-dashboard">
+      <div class="page-head">
+        <div>
+          <h1>Dashboard</h1>
+          <div class="desc">Today is <span id="todayLabel"></span></div>
+        </div>
+        <button class="btn" data-goto="calendar">+ Schedule a session</button>
+      </div>
+
+      <div class="grid cols-4 section">
+        <div class="card stat-card"><div class="num" id="statDrills">0</div><div class="label">Drills in library</div></div>
+        <div class="card stat-card"><div class="num" id="statPrograms">0</div><div class="label">Saved programs</div></div>
+        <div class="card stat-card"><div class="num" id="statAthletes">0</div><div class="label">Athletes</div></div>
+        <div class="card stat-card"><div class="num" id="statUpcoming">0</div><div class="label">Sessions next 7 days</div></div>
+      </div>
+
+      <div class="section">
+        <div class="section-title"><h2>Upcoming sessions (next 7 days)</h2><button class="btn secondary small" data-goto="calendar">Open calendar</button></div>
+        <div id="upcomingList"></div>
+      </div>
+
+      <div class="section">
+        <div class="section-title"><h2>Quick start</h2></div>
+        <div class="grid cols-3">
+          <div class="card">
+            <h3>1. Browse drills</h3>
+            <p class="muted" style="font-size:12.5px;">Search the library by category &amp; equipment, pulled from your training files.</p>
+            <button class="btn secondary small" data-goto="library">Open library</button>
+          </div>
+          <div class="card">
+            <h3>2. Build a program</h3>
+            <p class="muted" style="font-size:12.5px;">Combine drills into a session with sets, reps and rest.</p>
+            <button class="btn secondary small" data-goto="programs">Open programs</button>
+          </div>
+          <div class="card">
+            <h3>3. Schedule &amp; assign</h3>
+            <p class="muted" style="font-size:12.5px;">Put a program on the calendar for the whole roster.</p>
+            <button class="btn secondary small" data-goto="calendar">Open calendar</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- LIBRARY -->
+    <section class="page" id="page-library">
+      <div class="page-head">
+        <div>
+          <h1>Drill Library</h1>
+          <div class="desc">Curated from your speed, agility, plyometric &amp; ball-mastery references.</div>
+        </div>
+        <button class="btn secondary" id="addCustomDrillBtn">+ Add custom drill</button>
+      </div>
+      <div class="toolbar">
+        <input type="text" id="drillSearch" placeholder="Search drills...">
+        <select id="drillCatFilter"><option value="">All categories</option></select>
+        <select id="drillEquipFilter"><option value="">All equipment</option></select>
+      </div>
+      <div class="grid cols-3" id="drillGrid"></div>
+      <div class="empty" id="drillEmpty" style="display:none;">No drills match your filters.</div>
+    </section>
+
+    <!-- PROGRAMS -->
+    <section class="page" id="page-programs">
+      <div class="page-head">
+        <div>
+          <h1>Programs</h1>
+          <div class="desc">Build a training session or weekly plan from library drills.</div>
+        </div>
+        <button class="btn" id="newProgramBtn">+ New program</button>
+      </div>
+      <div class="grid cols-3" id="programGrid"></div>
+      <div class="empty" id="programEmpty" style="display:none;">No programs yet. Create one to get started.</div>
+    </section>
+
+    <!-- CALENDAR -->
+    <section class="page" id="page-calendar">
+      <div class="page-head">
+        <div>
+          <h1>Calendar</h1>
+          <div class="desc">Schedule programs for the whole roster.</div>
+        </div>
+      </div>
+      <div class="cal-head">
+        <div class="cal-nav">
+          <button class="btn secondary small" id="calPrev">&larr;</button>
+          <button class="btn secondary small" id="calToday">Today</button>
+          <button class="btn secondary small" id="calNext">&rarr;</button>
+        </div>
+        <div class="month-label" id="calMonthLabel"></div>
+        <div></div>
+      </div>
+      <div class="cal-grid" id="calDow"></div>
+      <div class="cal-grid" id="calGrid" style="margin-top:6px;"></div>
+    </section>
+
+    <!-- ATHLETES -->
+    <section class="page" id="page-athletes">
+      <div class="page-head">
+        <div>
+          <h1>Athletes</h1>
+          <div class="desc">Your roster &mdash; scheduled programs go to everyone on this list.</div>
+        </div>
+        <button class="btn" id="newAthleteBtn">+ Add athlete</button>
+      </div>
+      <div class="card" style="padding:0; overflow:hidden;">
+        <table id="athleteTable">
+          <thead><tr><th>Name</th><th>Group</th><th>Notes</th><th></th></tr></thead>
+          <tbody id="athleteTbody"></tbody>
+        </table>
+      </div>
+      <div class="empty" id="athleteEmpty" style="display:none; margin-top:14px;">No athletes yet. Add your first athlete.</div>
+    </section>
+  </main>
+</div>
+
+<!-- Modal: Drill detail -->
+<div class="modal-overlay" id="modalDrillDetail">
+  <div class="modal">
+    <div class="modal-head">
+      <h2 id="ddTitle">Drill</h2>
+      <button class="modal-close" data-close>&times;</button>
+    </div>
+    <div class="drill-detail">
+      <div class="meta-row" id="ddMeta"></div>
+      <div class="desc" id="ddDesc"></div>
+      <div class="cue" id="ddCue"></div>
+      <div class="default-dose" id="ddDose"></div>
+    </div>
+    <div class="field" style="margin-top:16px;">
+      <label>Add to program</label>
+      <div class="field-row">
+        <select id="ddProgramSelect"></select>
+        <button class="btn small" id="ddAddToProgram" style="flex:0 0 auto;">Add</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Add custom drill -->
+<div class="modal-overlay" id="modalCustomDrill">
+  <div class="modal">
+    <div class="modal-head"><h2>Add custom drill</h2><button class="modal-close" data-close>&times;</button></div>
+    <form id="customDrillForm">
+      <div class="field"><label>Name *</label><input type="text" id="cdName" required></div>
+      <div class="field-row">
+        <div class="field"><label>Category *</label><select id="cdCategory" required></select></div>
+        <div class="field"><label>Equipment</label><input type="text" id="cdEquip" placeholder="e.g. Cones, none"></div>
+      </div>
+      <div class="field"><label>Description / how-to *</label><textarea id="cdDesc" rows="4" required></textarea></div>
+      <div class="field"><label>Coaching cue (optional)</label><textarea id="cdCue" rows="2"></textarea></div>
+      <div class="field"><label>Default dose (e.g. "3 sets x 20m" or "4 x 10 reps each side")</label><input type="text" id="cdDose"></div>
+      <div class="modal-actions">
+        <button type="button" class="btn secondary" data-close>Cancel</button>
+        <button type="submit" class="btn">Save drill</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal: Program editor -->
+<div class="modal-overlay" id="modalProgram">
+  <div class="modal wide">
+    <div class="modal-head"><h2 id="progEditorTitle">New program</h2><button class="modal-close" data-close>&times;</button></div>
+    <div class="field-row">
+      <div class="field" style="flex:1.4;"><label>Program name *</label><input type="text" id="progName"></div>
+      <div class="field" style="flex:2;"><label>Description</label><input type="text" id="progDesc" placeholder="e.g. Friday acceleration + agility session"></div>
+    </div>
+    <hr class="sep">
+    <div class="field">
+      <label>Blocks</label>
+      <div id="progBlocks"></div>
+      <div class="field-row" style="margin-top:10px;">
+        <select id="progAddDrillSelect" style="flex:1;"></select>
+        <button class="btn secondary small" id="progAddBlockBtn" style="flex:0 0 auto;">+ Add drill</button>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button type="button" class="btn secondary" data-close>Cancel</button>
+      <button type="button" class="btn" id="progSaveBtn">Save program</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Athlete editor -->
+<div class="modal-overlay" id="modalAthlete">
+  <div class="modal">
+    <div class="modal-head"><h2 id="athleteEditorTitle">Add athlete</h2><button class="modal-close" data-close>&times;</button></div>
+    <form id="athleteForm">
+      <div class="field"><label>Name *</label><input type="text" id="athName" required></div>
+      <div class="field"><label>Group / team</label><input type="text" id="athGroup" placeholder="e.g. U16 Boys"></div>
+      <div class="field"><label>Notes</label><textarea id="athNotes" rows="2"></textarea></div>
+      <div class="modal-actions">
+        <button type="button" class="btn secondary" data-close>Cancel</button>
+        <button type="submit" class="btn">Save athlete</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal: Day / session editor -->
+<div class="modal-overlay" id="modalDay">
+  <div class="modal wide">
+    <div class="modal-head"><h2 id="dayTitle">Sessions</h2><button class="modal-close" data-close>&times;</button></div>
+    <div id="dayExisting"></div>
+    <hr class="sep">
+    <h3 style="font-size:13px;">Schedule a new session</h3>
+    <div class="field-row">
+      <div class="field"><label>Program *</label><select id="sessProgram"></select></div>
+      <div class="field"><label>Time</label><input type="time" id="sessTime" value="16:00"></div>
+    </div>
+    <div class="field">
+      <label>Send to</label>
+      <div class="flexrow" style="margin-bottom:8px; flex-wrap:wrap;">
+        <label style="font-size:12.5px;"><input type="checkbox" id="sessWholeSquad" checked disabled> Whole roster</label>
+        <select id="sessGroupSelect" style="display:none;"><option value="">Pick a group...</option></select>
+        <button type="button" class="btn secondary small" id="sessSelectGroupBtn" style="display:none;">Select group</button>
+      </div>
+      <div class="checks" id="sessAthleteChecks" style="display:none;"></div>
+    </div>
+    <div class="field"><label>Notes</label><input type="text" id="sessNotes"></div>
+    <div class="modal-actions">
+      <button type="button" class="btn" id="sessAddBtn">Add session</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============================== DRILL DATA ============================== */
+const CATEGORIES = [
+  "Acceleration","Max Velocity","Agility","Plyo Lower","Plyo Upper/Trunk",
+  "Ball Mastery","Strength & Power","Recovery & Tempo","Custom"
+];
+const CAT_CLASS = {
+  "Acceleration":"cat-Acceleration","Max Velocity":"cat-MaxVelocity","Agility":"cat-Agility",
+  "Plyo Lower":"cat-PlyoLower","Plyo Upper/Trunk":"cat-PlyoUpper","Ball Mastery":"cat-BallMastery",
+  "Strength & Power":"cat-Strength","Recovery & Tempo":"cat-Recovery","Custom":"cat-Custom"
+};
+
+const BUILTIN_DRILLS = [
+// ACCELERATION
+{id:"acc-wall-drill",name:"Wall Drill",category:"Acceleration",equipment:"Wall",
+ desc:"Lean into a wall with arms straight out, hands below chest, so the body is in an acceleration position. Rapidly pop one thigh up with the toe flexed and switch legs, pulling each foot back to the ground with the glute.",
+ cue:"Don't stab into the ground — pull with the glute, not the hamstring.",
+ dose:"3 sets x 10s each leg"},
+{id:"acc-partner-release",name:"Partner Release Starts",category:"Acceleration",equipment:"Partner",
+ desc:"Get into the acceleration position; a partner holds you in place while you drive into the ground to build force. After a few \"revs\" the partner releases you into a full sprint.",
+ cue:"Stay patient in the acceleration position after release — don't pop up early.",
+ dose:"4 sets x 10yd"},
+{id:"acc-2pt-10yd",name:"2-Point 10-Yard Starts",category:"Acceleration",equipment:"None",
+ desc:"From a 2-point standing start, sprint 10 yards at maximum effort. Used to groove acceleration mechanics and as a benchmark for horizontal force production.",
+ cue:"Forward lean and shin angle on the first 3 steps — this is the best indicator of acceleration quality.",
+ dose:"6 sets x 10yd"},
+{id:"acc-power-skip-distance",name:"Power Skip for Distance",category:"Acceleration",equipment:"None",
+ desc:"A running skip using opposite arm/leg action, pushing off each foot for maximum distance rather than height.",
+ cue:"Float and reach for distance, not height.",
+ dose:"3 sets x 20m"},
+{id:"acc-staggered-broad-jump",name:"Staggered Stance Broad Jump",category:"Acceleration",equipment:"None",
+ desc:"From a staggered (split) stance, jump forward for distance using both legs together, working through full hip extension before the first sprint stride.",
+ cue:"Drive through full hip extension on both legs before landing.",
+ dose:"4 sets x 5 reps"},
+{id:"acc-falling-start",name:"Falling Start to Sprint (Drop and Go)",category:"Acceleration",equipment:"None",
+ desc:"Lean forward from a standing position until you must catch your fall with a sprint step, then accelerate out.",
+ cue:"Let gravity start the movement — don't push backward first.",
+ dose:"4 x 10m, 3 x 20m"},
+{id:"acc-sled-pull",name:"Sprint Sled Pulls / Resistance Band Sprints",category:"Acceleration",equipment:"Sled or resistance band",
+ desc:"Sprint against resistance from a sled or band loaded at roughly 15-25% of bodyweight to overload acceleration mechanics.",
+ cue:"Keep the same shin angle and arm action as an unresisted sprint — don't let the load distort posture.",
+ dose:"5 sets x 10m"},
+{id:"acc-wall-drill-series",name:"Wall Drill Series (High-Knee Punch & Switch)",category:"Acceleration",equipment:"Wall",
+ desc:"From the wall acceleration position, perform rapid high-knee \"punch and switch\" repetitions on each leg.",
+ cue:"Quick switches, minimal ground contact time.",
+ dose:"3 sets x 10 each leg"},
+{id:"acc-ladder-into-sprint",name:"Acceleration Ladder into 20m Sprint",category:"Acceleration",equipment:"Agility ladder",
+ desc:"Quick feet through an agility ladder pattern, transitioning immediately into a 20m acceleration sprint.",
+ cue:"Stay low coming out of the ladder into the sprint.",
+ dose:"4 sets"},
+{id:"acc-towel-sprint",name:"Towel / Partner-Resisted Sprints",category:"Acceleration",equipment:"Towel or resistance band, partner",
+ desc:"A partner holds a towel or band around your waist providing resistance while you sprint against it.",
+ cue:"Drive knees and pump arms hard against the resistance.",
+ dose:"4 sets x 10-15m"},
+
+// MAX VELOCITY
+{id:"mv-a-skip",name:"A-Skip",category:"Max Velocity",equipment:"None",
+ desc:"A skipping drill that teaches you to \"pop\" the thigh up while extending the opposite hip, applying force into the ground by pulling with the glute rather than pushing.",
+ cue:"Pull with the glute on ground contact, not pushing into the ground.",
+ dose:"3 sets x 20m"},
+{id:"mv-b-skip",name:"B-Skip",category:"Max Velocity",equipment:"None",
+ desc:"Builds on the A-Skip by adding a hamstring release after the thigh pops up, teaching the proper timing to avoid reaching/over-striding.",
+ cue:"Release the hamstring late, with the thigh already in position — don't reach for the ground.",
+ dose:"3 sets x 20m"},
+{id:"mv-straight-leg-bound",name:"Straight-Leg Bounds",category:"Max Velocity",equipment:"None",
+ desc:"Bounding with a straight leg on ground contact to develop hip separation and glute-driven force production.",
+ cue:"Pull through the ground with the glute on every contact.",
+ dose:"3 sets x 20m"},
+{id:"mv-power-a-skip",name:"Power A-Skip",category:"Max Velocity",equipment:"None",
+ desc:"A regular A-Skip with an added horizontal force component, covering more ground per skip.",
+ cue:"Same thigh pop as an A-skip, but drive forward, not just up.",
+ dose:"3 sets x 20m"},
+{id:"mv-power-skip-height",name:"Power Skip for Height",category:"Max Velocity",equipment:"None",
+ desc:"Similar to a sprint stride — pop the opposite thigh and pump the opposite arm — but push off the ground to gain maximum height.",
+ cue:"Vertical force here mirrors what you need to maintain at top speed.",
+ dose:"3 sets x 10 reps"},
+{id:"mv-sprinter-step-up",name:"Sprinter Step-Ups",category:"Max Velocity",equipment:"Box or raised surface",
+ desc:"Rest one leg on a raised surface bent to ~90 degrees, drive the opposite arm as in sprinting, then push off and switch arm/leg on landing, controlling the drop.",
+ cue:"Control the landing — don't just drop onto the box.",
+ dose:"3 sets x 8 each leg"},
+{id:"mv-fly-in-sprint",name:"Fly-In Sprints",category:"Max Velocity",equipment:"None",
+ desc:"A build-up run into a timed flying segment to expose the athlete to true top-speed mechanics. Advanced drill for top-speed exposure.",
+ cue:"Relax the face, shoulders and hands at top speed — tension kills velocity.",
+ dose:"4 sets x 30m fly (after 20m build-up)"},
+{id:"mv-ankling",name:"Ankling + Dribble Runs",category:"Max Velocity",equipment:"None",
+ desc:"Quick, small ground-contact drills emphasizing ankle stiffness and rhythm, building into a short acceleration.",
+ cue:"Stay on the balls of the feet, quick and light.",
+ dose:"4 sets x 20m"},
+
+// AGILITY
+{id:"ag-lateral-line-hop",name:"Lateral Line Hop",category:"Agility",equipment:"Line or tape",
+ desc:"Hop side to side over a line, starting on both legs and progressing to one leg. Builds the foundation for cutting ability.",
+ cue:"Keep your center of gravity over the line and knees slightly bent; maximize touches in the time window.",
+ dose:"3 sets x 20s"},
+{id:"ag-lateral-cone-hop",name:"Lateral Cone Hop",category:"Agility",equipment:"3 cones",
+ desc:"Set 3 cones about a foot apart. On one leg, hop down the line and back, spending as little time on the ground as possible, landing in line with each cone.",
+ cue:"Minimal ground contact time, foot lands exactly in line with each cone.",
+ dose:"3 sets each leg"},
+{id:"ag-short-lateral-shuttle",name:"Short Lateral Shuttle",category:"Agility",equipment:"3 cones",
+ desc:"Set 3 cones 7 feet apart. Start at the middle, shuffle right to the far cone, change direction to the far left cone, then change direction again to finish at the middle.",
+ cue:"Stay low through every direction change to maximize lateral force production and absorption.",
+ dose:"4 sets each side"},
+{id:"ag-skater-jump",name:"Skater Jump",category:"Agility",equipment:"None",
+ desc:"A lateral bounding movement using the knee, hip and ankle to produce force sideways. Get up and out as high/far as possible and stick the landing.",
+ cue:"Stick the landing fully before the next jump — control before speed.",
+ dose:"3 sets x 8 each side"},
+{id:"ag-ascending-skater-jump",name:"Ascending Skater Jump",category:"Agility",equipment:"None",
+ desc:"Push out laterally as far as possible, catch yourself on the landing leg, then push back roughly halfway to where you started. Builds lateral force production and absorption together.",
+ cue:"Absorb the landing actively through the hip and knee before pushing back.",
+ dose:"3 sets x 6 each side"},
+{id:"ag-5-10-5",name:"5-10-5 Pro Agility Shuttle",category:"Agility",equipment:"3 cones",
+ desc:"Three cones in a line, 5 yards apart. Sprint to one side cone and touch the line, sprint to the far cone (10 yards) and touch, then sprint back through the start (5 yards).",
+ cue:"Plant and turn the hips quickly at each cone — don't round the turn.",
+ dose:"4 sets"},
+{id:"ag-mirror-drill",name:"Mirror Drill",category:"Agility",equipment:"Partner",
+ desc:"One partner leads with changes of direction and speed while the other mirrors the movement as closely as possible, staying square. Switch roles after a set time. Great for reactive defensive movement.",
+ cue:"Stay on the balls of the feet and react — don't anticipate the leader's next move.",
+ dose:"4 sets x 20s"},
+{id:"ag-ladder-sprints",name:"Agility Ladder Sprints",category:"Agility",equipment:"Agility ladder",
+ desc:"Rapid footwork patterns through an agility ladder (in-in-out, lateral, ickey shuffle, etc.) performed at high speed for footwork and coordination.",
+ cue:"Quiet feet, quick ground contacts — speed before complexity.",
+ dose:"4 sets through the ladder"},
+{id:"ag-1v1-chaos-box",name:"1v1 Chaos Box",category:"Agility",equipment:"Cones, partner",
+ desc:"A small grid (the \"box\") where two players compete 1v1 to apply speed, agility and quickness principles under game-realistic pressure.",
+ cue:"Apply all SAQ principles under pressure — this is the integration step after isolated drills.",
+ dose:"4 sets x 30s"},
+{id:"ag-sprint-stop-sprint",name:"Sprint-Stop-Sprint",category:"Agility",equipment:"Cones",
+ desc:"Sprint a set distance, decelerate to a controlled stop, then re-accelerate. Trains deceleration control into re-acceleration.",
+ cue:"Lower your center of mass and shorten steps to decelerate — don't just lean back.",
+ dose:"4 sets x 10m + 10m"},
+{id:"ag-auditory-reaction-sprint",name:"Auditory Reaction Sprint",category:"Agility",equipment:"Partner",
+ desc:"A partner calls \"go\" at random, unpredictable intervals; react and sprint as fast as possible from a ready position.",
+ cue:"Stay relaxed and ready — false starts kill reaction time.",
+ dose:"6 sets x 10m"},
+
+// PLYO LOWER
+{id:"pl-ankle-hop",name:"Two-Foot Ankle Hop",category:"Plyo Lower",equipment:"None",
+ desc:"From an upright stance, hop vertically with the primary motion at the ankle joint, landing and immediately repeating. Minimal horizontal or lateral movement.",
+ cue:"Quick, small hops driven by the ankle, not a big knee bend.",
+ dose:"3 sets x 10 reps"},
+{id:"pl-squat-jump",name:"Squat Jump",category:"Plyo Lower",equipment:"None",
+ desc:"From a squat position (thighs slightly above parallel), hands behind head, explosively jump to maximum height and land back in the squat position to repeat.",
+ cue:"Explosive intent every rep — no resting at the bottom.",
+ dose:"3 sets x 8 reps"},
+{id:"pl-jump-reach",name:"Jump and Reach",category:"Plyo Lower",equipment:"Target/object",
+ desc:"From an upright stance with a countermovement, jump explosively and reach for an object or target overhead.",
+ cue:"Minimal delay between jumps; emphasis on vertical height.",
+ dose:"3 sets x 8 reps"},
+{id:"pl-double-tuck-jump",name:"Double-Leg Tuck Jump",category:"Plyo Lower",equipment:"None",
+ desc:"Jump explosively upward, pulling both knees to the chest and grasping them briefly before releasing and landing to repeat.",
+ cue:"Quick knee tuck and release — don't hang in the air.",
+ dose:"3 sets x 8 reps"},
+{id:"pl-single-tuck-jump",name:"Single-Leg Tuck Jump",category:"Plyo Lower",equipment:"None",
+ desc:"Standing on one leg, jump and pull the knee of the jumping leg to the chest before releasing and landing on the same leg to repeat. Switch legs after a brief rest.",
+ cue:"Keep the non-jumping leg stable and flexed throughout.",
+ dose:"3 sets x 6 each leg"},
+{id:"pl-split-squat-jump",name:"Split Squat Jump",category:"Plyo Lower",equipment:"None",
+ desc:"From a lunge position, jump explosively for maximum height/power, landing back in the same lunge stance. Switch front leg after a set.",
+ cue:"Maximize height and power, not lunge depth.",
+ dose:"3 sets x 8 each leg"},
+{id:"pl-cycled-split-squat-jump",name:"Cycled Split Squat Jump",category:"Plyo Lower",equipment:"None",
+ desc:"As the split squat jump, but switch leg positions in the air on every rep, landing in the opposite lunge stance.",
+ cue:"Don't let the lunge get too deep on landing.",
+ dose:"3 sets x 8 reps (switching)"},
+{id:"pl-pike-jump",name:"Pike Jump",category:"Plyo Lower",equipment:"None",
+ desc:"Jump explosively, keeping legs straight and together, lifting them forward to try to touch the toes with the hands at the top.",
+ cue:"Keep legs straight throughout the pike.",
+ dose:"3 sets x 8 reps"},
+{id:"pl-double-vertical-jump",name:"Double-Leg Vertical Jump",category:"Plyo Lower",equipment:"Target (optional)",
+ desc:"Explosive vertical jump using both arms to assist, reaching for a target or the ceiling, with recovery time allowed between jumps.",
+ cue:"Full recovery between reps — this is a max-effort drill, not a conditioning drill.",
+ dose:"4 sets x 5 reps"},
+{id:"pl-jump-over-barrier",name:"Jump Over Barrier",category:"Plyo Lower",equipment:"Cone or hurdle",
+ desc:"Jump over a low barrier with both legs using hip and knee flexion, keeping knees and feet together, then land and repeat.",
+ cue:"No lateral deviation — knees and feet stay together.",
+ dose:"3 sets x 8 reps"},
+{id:"pl-double-leg-hop",name:"Double-Leg Hop (horizontal)",category:"Plyo Lower",equipment:"None",
+ desc:"From an upright stance, jump as far forward as possible with both legs, landing and immediately repeating the hop.",
+ cue:"Maximize horizontal distance each rep.",
+ dose:"3 sets x 5 reps"},
+{id:"pl-zigzag-hop",name:"Double-Leg Zigzag Hop",category:"Plyo Lower",equipment:"~10 low hurdles/cones",
+ desc:"Place hurdles 18-24 inches apart in a zigzag pattern; hop diagonally from the outside of one hurdle to the next, keeping shoulders perpendicular to the line of travel.",
+ cue:"Keep shoulders square; let the hips do the diagonal work.",
+ dose:"3 sets through the pattern"},
+{id:"pl-single-leg-hop",name:"Single-Leg Hop",category:"Plyo Lower",equipment:"None",
+ desc:"Standing on one leg, jump forward explosively using both arms to assist, landing on the same leg and repeating. Switch legs after a brief rest.",
+ cue:"Keep the non-jumping leg flexed and out of the way.",
+ dose:"3 sets x 5 each leg"},
+{id:"pl-front-barrier-hop",name:"Front Barrier Hop",category:"Plyo Lower",equipment:"2 cones/hurdles",
+ desc:"Facing barriers, jump over the first with both legs using hip/knee flexion, land, then immediately jump the second barrier.",
+ cue:"Increase barrier height or go single-leg to progress difficulty.",
+ dose:"3 sets x 6 reps"},
+{id:"pl-lateral-barrier-hop",name:"Lateral Barrier Hop",category:"Plyo Lower",equipment:"Cones/hurdles",
+ desc:"Jump sideways over a barrier with both legs, land on the opposite side, then immediately hop back to the starting side.",
+ cue:"Knees and feet stay together through the barrier.",
+ dose:"3 sets x 8 reps"},
+{id:"pl-single-leg-pushoff",name:"Single-Leg Push-Off (box)",category:"Plyo Lower",equipment:"Plyo box 6-18in",
+ desc:"With one foot on the ground and one heel near the edge of a low box, jump up using the box foot to push off, landing with the same foot back on the box just before the ground foot.",
+ cue:"Increase box height to progress intensity.",
+ dose:"3 sets x 8 each leg"},
+{id:"pl-alt-leg-pushoff",name:"Alternate-Leg Push-Off (box)",category:"Plyo Lower",equipment:"Plyo box 6-18in",
+ desc:"As the single-leg push-off, but land with the opposite foot on the box each rep, alternating legs continuously.",
+ cue:"Quick alternation — minimize ground contact time.",
+ dose:"3 sets x 10 reps total"},
+{id:"pl-lateral-pushoff",name:"Lateral Push-Off (box)",category:"Plyo Lower",equipment:"Plyo box",
+ desc:"Standing to one side of a box with the near foot on top, push off vertically and land with the same foot back on the box.",
+ cue:"Drive through the box foot, stay tall through the torso.",
+ dose:"3 sets x 8 each side"},
+{id:"pl-side-side-pushoff",name:"Side-to-Side Push-Off (box)",category:"Plyo Lower",equipment:"Plyo box",
+ desc:"From one side of the box, jump up and over, landing with the opposite foot on the far side, then repeat back across.",
+ cue:"Clear the box fully on each rep.",
+ dose:"3 sets x 8 reps"},
+{id:"pl-jump-to-box",name:"Jump to Box",category:"Plyo Lower",equipment:"Plyo box",
+ desc:"From an upright stance, jump onto the top of the box with both legs, land in a half-squat, step down and repeat.",
+ cue:"Land soft in a half-squat, don't crash the landing.",
+ dose:"4 sets x 6 reps"},
+{id:"pl-squat-box-jump",name:"Squat Box Jump",category:"Plyo Lower",equipment:"Plyo box",
+ desc:"Hands clasped behind the head, jump onto the box with both legs from a counter-movement, land in a half-squat, step down and repeat.",
+ cue:"Increase box height to progress intensity.",
+ dose:"4 sets x 6 reps"},
+{id:"pl-lateral-box-jump",name:"Lateral Box Jump",category:"Plyo Lower",equipment:"Plyo box",
+ desc:"Standing beside the box, jump up and onto it with both legs, land in a half-squat, step down on the opposite side and repeat in reverse.",
+ cue:"Control the landing in a half squat before stepping down.",
+ dose:"3 sets x 6 reps each direction"},
+{id:"pl-depth-jump-sprint",name:"Depth Jump + Sprint",category:"Plyo Lower",equipment:"Plyo box",
+ desc:"Step off a box, land and immediately rebound into a sprint. A contrast-training drill that places a high load on the central nervous system — advanced athletes only.",
+ cue:"Minimize ground contact time on the landing before driving into the sprint.",
+ dose:"4 sets x 10-15m sprint out"},
+
+// PLYO UPPER / TRUNK
+{id:"pu-chest-pass",name:"Chest Pass (med ball)",category:"Plyo Upper/Trunk",equipment:"Medicine ball (5-10lb), wall or partner",
+ desc:"Facing a wall or partner ~10ft away, raise the ball to chest height with elbows flexed, then throw by extending the elbows. Catch the return and repeat immediately.",
+ cue:"Use a slight countermovement (arms back) before each throw.",
+ dose:"3 sets x 8 reps"},
+{id:"pu-overhead-throw",name:"Two-Handed Overhead Throw",category:"Plyo Upper/Trunk",equipment:"Medicine ball, wall or partner",
+ desc:"Raise the ball overhead and throw forward to a wall or partner with both arms extended, catch the return and repeat.",
+ cue:"Full extension through the throw, catch and reset quickly.",
+ dose:"3 sets x 8 reps"},
+{id:"pu-side-to-side-throw",name:"Two-Handed Side-to-Side Throw",category:"Plyo Upper/Trunk",equipment:"Medicine ball, wall or partner",
+ desc:"Raise the ball over one shoulder and throw forward/diagonally; catch the return over the opposite shoulder and repeat, alternating sides.",
+ cue:"Rotate through the trunk, not just the arms.",
+ dose:"3 sets x 8 each side"},
+{id:"pu-power-drop",name:"Power Drop",category:"Plyo Upper/Trunk",equipment:"Medicine ball, partner",
+ desc:"Lying supine with arms extended overhead, a partner drops the ball onto your hands; catch it and immediately throw it back up.",
+ cue:"Absorb and reverse the catch as fast as possible.",
+ dose:"3 sets x 8 reps"},
+{id:"pu-45-situp",name:"45-Degree Sit-Up (trunk)",category:"Plyo Upper/Trunk",equipment:"Medicine ball, partner",
+ desc:"Sit with the trunk at ~45 degrees; a partner throws the ball to your outstretched hands, you catch with minimal trunk extension and immediately return it.",
+ cue:"Power the return throw from the abdominals, not momentum.",
+ dose:"3 sets x 10 reps"},
+
+// BALL MASTERY
+{id:"bm-cone-dribbling",name:"Cone Dribbling",category:"Ball Mastery",equipment:"Cones",
+ desc:"Set cones in a line about one yard apart. Dribble through using short touches with different parts of the foot (inside, outside, sole), varying speed.",
+ cue:"Use both feet equally to build a well-rounded touch.",
+ dose:"4 sets through the line"},
+{id:"bm-figure8-dribbling",name:"Figure-8 Dribbling",category:"Ball Mastery",equipment:"2 cones",
+ desc:"Dribble the ball around two cones set in a figure-8 pattern, weaving in and out with both feet.",
+ cue:"Maintain a smooth rhythm through the changes of direction.",
+ dose:"4 sets x 1 min"},
+{id:"bm-mirror-dribbling",name:"Mirror Dribbling (ball)",category:"Ball Mastery",equipment:"2 balls, partner",
+ desc:"One player leads with dribbling moves, changes of direction and speed; the partner mirrors as closely as possible. Switch roles after a set time.",
+ cue:"Mirror the leader's actions precisely — this builds reactive ball control.",
+ dose:"3 sets x 30s each role"},
+{id:"bm-juggling-progression",name:"Juggling Progression",category:"Ball Mastery",equipment:"Ball",
+ desc:"Juggle with the feet, then progress to thighs, chest and head, increasing touches before the ball hits the ground.",
+ cue:"Develops coordination and touch — track the ball with soft eyes, not a fixed stare.",
+ dose:"3 sets to failure"},
+{id:"bm-cone-slalom-turns",name:"Cone Slalom with Turns",category:"Ball Mastery",equipment:"Cones",
+ desc:"Dribble through a row of cones performing a quick turn at each one (inside hook, outside cut, or 360) to change direction smoothly.",
+ cue:"Keep the ball close on every turn — a heavy touch out of the turn kills the drill.",
+ dose:"4 sets through the line"},
+{id:"bm-close-control-circuit",name:"Close-Control Footwork Circuit",category:"Ball Mastery",equipment:"Ball",
+ desc:"A circuit of close-control footwork moves performed in place or over a short distance: single-leg weave, outside-foot-only, 2-touch outside-inside, croqueta (inside/outside variants), sole roll-stop, toe taps (forward/back), roll stepover, L-drag push, V-cuts (inside/outside/alternating), pull-push combinations, lateral sole, and outside-foot stepover.",
+ cue:"Move through the list at a controlled pace first; add speed once each move is clean on both feet.",
+ dose:"3 reps of each move, both feet"},
+
+// STRENGTH & POWER
+{id:"sp-triphasic-block",name:"Triphasic Training Block",category:"Strength & Power",equipment:"Barbell / weight room",
+ desc:"A strength block split into three phases: pure eccentric tempo work, isometric holds, then explosive concentric work — building the muscle's capacity to absorb, hold and produce force quickly, which carries over to elastic, speed-specific strength.",
+ cue:"Each phase trains a different part of the force curve — don't rush the eccentric or isometric blocks.",
+ dose:"3-week block per phase, coach-programmed loads"},
+{id:"sp-hill-repeats",name:"Hill Repeats",category:"Strength & Power",equipment:"Hill",
+ desc:"Sprint uphill for 20-30 meters at maximum effort, then walk or jog back down for recovery. Repeat for several sets — builds force production without the deceleration demands of flat sprinting.",
+ cue:"Drive knees and arms hard; the hill naturally enforces good acceleration posture.",
+ dose:"6 sets x 20-30m"},
+
+// RECOVERY & TEMPO
+{id:"rt-tempo-runs",name:"Tempo Runs",category:"Recovery & Tempo",equipment:"None",
+ desc:"Sub-maximal runs (around 70% effort) used between high-intensity days to flush the central nervous system while reinforcing mechanics without excessive fatigue. Typical sets: 2x400m, 3x300m, 4x200m, or 6x100m @ 70%.",
+ cue:"70% effort means controlled and relaxed — this is not a max-effort sprint.",
+ dose:"Pick one: 2x400m / 3x300m / 4x200m / 6x100m @ 70%"},
+{id:"rt-jump-rope-flow",name:"Jump Rope Flow",category:"Recovery & Tempo",equipment:"Jump rope",
+ desc:"Light, rhythmic jump rope work used on recovery days to maintain ankle stiffness and rhythm without taxing the nervous system.",
+ cue:"Stay light and relaxed — this is active recovery, not a conditioning test.",
+ dose:"3 sets x 1-2 min"},
+{id:"rt-30s-interval-sprint",name:"30-Second Interval Sprints",category:"Recovery & Tempo",equipment:"None",
+ desc:"Sprint at maximum effort for 30 seconds, then jog or walk for 30 seconds to recover. Repeat for several cycles — a conditioning-oriented sprint interval.",
+ cue:"Maintain sprint mechanics even as fatigue sets in during later reps.",
+ dose:"6-8 cycles"}
+];
+
+/* ============================== STATE / STORAGE ============================== */
+const STORAGE_KEY = "speedAgilityCoach_v1";
+function loadState(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(raw) return JSON.parse(raw);
+  }catch(e){console.warn("Could not load saved data", e);}
+  return {athletes:[], programs:[], sessions:[], customDrills:[]};
+}
+let state = loadState();
+function saveState(){
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+function allDrills(){
+  return BUILTIN_DRILLS.concat(state.customDrills || []);
+}
+function getDrill(id){
+  return allDrills().find(d => d.id === id);
+}
+function uid(prefix){
+  return prefix + "_" + Date.now().toString(36) + Math.random().toString(36).slice(2,7);
+}
+function toast(msg){
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.style.display = "block";
+  clearTimeout(t._timer);
+  t._timer = setTimeout(()=>{ t.style.display = "none"; }, 2200);
+}
+function fmtDate(d){
+  return d.toISOString().slice(0,10);
+}
+function todayStr(){
+  return fmtDate(new Date());
+}
+
+/* ============================== NAVIGATION ============================== */
+function gotoTab(tab){
+  document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+  document.getElementById("page-"+tab).classList.add("active");
+  document.querySelectorAll("nav.tabs button").forEach(b=>{
+    b.classList.toggle("active", b.dataset.tab === tab);
+  });
+  if(tab === "library") renderLibrary();
+  if(tab === "programs") renderPrograms();
+  if(tab === "calendar") renderCalendar();
+  if(tab === "athletes") renderAthletes();
+  if(tab === "dashboard") renderDashboard();
+}
+document.querySelectorAll("nav.tabs button").forEach(b=>{
+  b.addEventListener("click", ()=> gotoTab(b.dataset.tab));
+});
+document.querySelectorAll("[data-goto]").forEach(b=>{
+  b.addEventListener("click", ()=> gotoTab(b.dataset.goto));
+});
+document.querySelectorAll("[data-close]").forEach(b=>{
+  b.addEventListener("click", ()=>{
+    b.closest(".modal-overlay").classList.remove("open");
+  });
+});
+document.querySelectorAll(".modal-overlay").forEach(ov=>{
+  ov.addEventListener("click", (e)=>{ if(e.target === ov) ov.classList.remove("open"); });
+});
+function openModal(id){ document.getElementById(id).classList.add("open"); }
+function closeModal(id){ document.getElementById(id).classList.remove("open"); }
+
+/* ============================== DASHBOARD ============================== */
+function renderDashboard(){
+  document.getElementById("todayLabel").textContent = new Date().toLocaleDateString(undefined,{weekday:"long",year:"numeric",month:"long",day:"numeric"});
+  document.getElementById("statDrills").textContent = allDrills().length;
+  document.getElementById("statPrograms").textContent = state.programs.length;
+  document.getElementById("statAthletes").textContent = state.athletes.length;
+
+  const today = new Date(); today.setHours(0,0,0,0);
+  const weekOut = new Date(today); weekOut.setDate(weekOut.getDate()+7);
+  const upcoming = state.sessions
+    .filter(s=>{ const d = new Date(s.date+"T00:00:00"); return d >= today && d <= weekOut; })
+    .sort((a,b)=> (a.date+a.time).localeCompare(b.date+b.time));
+
+  document.getElementById("statUpcoming").textContent = upcoming.length;
+
+  const list = document.getElementById("upcomingList");
+  if(upcoming.length === 0){
+    list.innerHTML = '<div class="empty">No sessions scheduled in the next 7 days.</div>';
+  } else {
+    list.innerHTML = upcoming.map(s=>{
+      const prog = state.programs.find(p=>p.id===s.programId);
+      const names = sessionAssigneeNames(s);
+      return `<div class="sess-item">
+        <div>
+          <div class="sname">${escapeHtml(prog ? prog.name : "(deleted program)")}</div>
+          <div class="smeta">${formatDateNice(s.date)} &middot; ${s.time || "--"} &middot; ${escapeHtml(names)}</div>
+        </div>
+      </div>`;
+    }).join("");
+  }
+  document.getElementById("dataSummary").textContent = allDrills().length + " drills loaded";
+}
+function sessionAssigneeNames(s){
+  if(s.wholeSquad) return "Whole roster";
+  if(!s.athleteIds || s.athleteIds.length===0) return "Unassigned";
+  const names = s.athleteIds.map(id=>{
+    const a = state.athletes.find(x=>x.id===id);
+    return a ? a.name : null;
+  }).filter(Boolean);
+  return names.length ? names.join(", ") : "Unassigned";
+}
+function formatDateNice(dateStr){
+  const d = new Date(dateStr+"T00:00:00");
+  return d.toLocaleDateString(undefined,{weekday:"short",month:"short",day:"numeric"});
+}
+function escapeHtml(s){
+  return String(s==null?"":s).replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+
+/* ============================== DRILL LIBRARY ============================== */
+function populateCategorySelects(){
+  const filt = document.getElementById("drillCatFilter");
+  filt.innerHTML = '<option value="">All categories</option>' + CATEGORIES.map(c=>`<option value="${c}">${c}</option>`).join("");
+  const cd = document.getElementById("cdCategory");
+  cd.innerHTML = CATEGORIES.filter(c=>c!=="Custom").map(c=>`<option value="${c}">${c}</option>`).join("") + `<option value="Custom">Custom</option>`;
+}
+function populateEquipmentFilter(){
+  const equipSet = new Set();
+  allDrills().forEach(d=>{
+    (d.equipment||"").split(",").forEach(e=>{ e=e.trim(); if(e) equipSet.add(e); });
+  });
+  const filt = document.getElementById("drillEquipFilter");
+  const current = filt.value;
+  filt.innerHTML = '<option value="">All equipment</option>' + Array.from(equipSet).sort().map(e=>`<option value="${e}">${e}</option>`).join("");
+  filt.value = current;
+}
+function renderLibrary(){
+  populateEquipmentFilter();
+  const q = document.getElementById("drillSearch").value.trim().toLowerCase();
+  const cat = document.getElementById("drillCatFilter").value;
+  const equip = document.getElementById("drillEquipFilter").value;
+  const drills = allDrills().filter(d=>{
+    if(cat && d.category !== cat) return false;
+    if(equip && !(d.equipment||"").toLowerCase().includes(equip.toLowerCase())) return false;
+    if(q && !(d.name.toLowerCase().includes(q) || d.desc.toLowerCase().includes(q))) return false;
+    return true;
+  });
+  const grid = document.getElementById("drillGrid");
+  document.getElementById("drillEmpty").style.display = drills.length ? "none" : "block";
+  grid.innerHTML = drills.map(d=>`
+    <div class="card drill-card" data-id="${d.id}">
+      <span class="tag ${CAT_CLASS[d.category]||'cat-Custom'}">${d.category}</span>
+      <h3>${escapeHtml(d.name)}</h3>
+      <div class="desc-snip">${escapeHtml(d.desc)}</div>
+      <div class="equip">${escapeHtml(d.equipment || "No equipment")}</div>
+    </div>
+  `).join("");
+  grid.querySelectorAll(".drill-card").forEach(card=>{
+    card.addEventListener("click", ()=> openDrillDetail(card.dataset.id));
+  });
+}
+document.getElementById("drillSearch").addEventListener("input", renderLibrary);
+document.getElementById("drillCatFilter").addEventListener("change", renderLibrary);
+document.getElementById("drillEquipFilter").addEventListener("change", renderLibrary);
+
+let _ddCurrentDrillId = null;
+function openDrillDetail(id){
+  const d = getDrill(id);
+  if(!d) return;
+  _ddCurrentDrillId = id;
+  document.getElementById("ddTitle").textContent = d.name;
+  document.getElementById("ddMeta").innerHTML = `<span class="tag ${CAT_CLASS[d.category]||'cat-Custom'}">${d.category}</span><span class="tag" style="background:var(--panel2); color:var(--muted);">${escapeHtml(d.equipment||"No equipment")}</span>`;
+  document.getElementById("ddDesc").textContent = d.desc;
+  document.getElementById("ddCue").textContent = d.cue ? ("Coaching cue: " + d.cue) : "";
+  document.getElementById("ddCue").style.display = d.cue ? "block" : "none";
+  document.getElementById("ddDose").textContent = d.dose ? ("Suggested dose: " + d.dose) : "";
+  const sel = document.getElementById("ddProgramSelect");
+  sel.innerHTML = state.programs.length
+    ? state.programs.map(p=>`<option value="${p.id}">${escapeHtml(p.name)}</option>`).join("")
+    : '<option value="">No programs yet — create one first</option>';
+  openModal("modalDrillDetail");
+}
+document.getElementById("ddAddToProgram").addEventListener("click", ()=>{
+  const progId = document.getElementById("ddProgramSelect").value;
+  if(!progId){ toast("Create a program first"); return; }
+  const prog = state.programs.find(p=>p.id===progId);
+  const d = getDrill(_ddCurrentDrillId);
+  prog.blocks.push({id:uid("blk"), drillId:d.id, sets:3, value:10, unit:"reps", rest:30, notes:""});
+  saveState();
+  toast(`Added "${d.name}" to ${prog.name}`);
+  closeModal("modalDrillDetail");
+});
+
+/* Custom drill */
+document.getElementById("addCustomDrillBtn").addEventListener("click", ()=>{
+  document.getElementById("customDrillForm").reset();
+  openModal("modalCustomDrill");
+});
+document.getElementById("customDrillForm").addEventListener("submit", (e)=>{
+  e.preventDefault();
+  const d = {
+    id: uid("custom"),
+    name: document.getElementById("cdName").value.trim(),
+    category: document.getElementById("cdCategory").value,
+    equipment: document.getElementById("cdEquip").value.trim(),
+    desc: document.getElementById("cdDesc").value.trim(),
+    cue: document.getElementById("cdCue").value.trim(),
+    dose: document.getElementById("cdDose").value.trim()
+  };
+  if(!d.name || !d.desc) return;
+  state.customDrills.push(d);
+  saveState();
+  closeModal("modalCustomDrill");
+  renderLibrary();
+  toast("Custom drill added");
+});
+
+/* ============================== PROGRAMS ============================== */
+function renderPrograms(){
+  const grid = document.getElementById("programGrid");
+  document.getElementById("programEmpty").style.display = state.programs.length ? "none" : "block";
+  grid.innerHTML = state.programs.map(p=>{
+    const totalRest = p.blocks.reduce((sum,b)=> sum + (Number(b.rest)||0), 0);
+    return `<div class="card program-card" data-id="${p.id}">
+      <h3>${escapeHtml(p.name)}</h3>
+      <div class="meta">${p.blocks.length} drill${p.blocks.length===1?"":"s"} ${p.description ? "&middot; "+escapeHtml(p.description) : ""}</div>
+      <div class="actions">
+        <button class="btn secondary small" data-act="edit">Edit</button>
+        <button class="btn secondary small" data-act="dup">Duplicate</button>
+        <button class="btn danger small" data-act="del">Delete</button>
+      </div>
+    </div>`;
+  }).join("");
+  grid.querySelectorAll(".program-card").forEach(card=>{
+    const id = card.dataset.id;
+    card.querySelector('[data-act="edit"]').addEventListener("click", ()=> openProgramEditor(id));
+    card.querySelector('[data-act="dup"]').addEventListener("click", ()=> duplicateProgram(id));
+    card.querySelector('[data-act="del"]').addEventListener("click", ()=> deleteProgram(id));
+  });
+}
+function duplicateProgram(id){
+  const p = state.programs.find(x=>x.id===id);
+  if(!p) return;
+  const copy = JSON.parse(JSON.stringify(p));
+  copy.id = uid("prog");
+  copy.name = p.name + " (copy)";
+  copy.blocks.forEach(b=> b.id = uid("blk"));
+  state.programs.push(copy);
+  saveState();
+  renderPrograms();
+  toast("Program duplicated");
+}
+function deleteProgram(id){
+  if(!confirm("Delete this program? Scheduled sessions using it will keep a reference but show as deleted.")) return;
+  state.programs = state.programs.filter(p=>p.id!==id);
+  saveState();
+  renderPrograms();
+  toast("Program deleted");
+}
+
+let _editingProgramId = null;
+function openProgramEditor(id){
+  _editingProgramId = id || null;
+  const prog = id ? state.programs.find(p=>p.id===id) : {id:null,name:"",description:"",blocks:[]};
+  document.getElementById("progEditorTitle").textContent = id ? "Edit program" : "New program";
+  document.getElementById("progName").value = prog.name;
+  document.getElementById("progDesc").value = prog.description || "";
+  // temp working copy of blocks
+  window._progBlocksWorking = JSON.parse(JSON.stringify(prog.blocks || []));
+  renderProgBlocks();
+  const sel = document.getElementById("progAddDrillSelect");
+  sel.innerHTML = allDrills().map(d=>`<option value="${d.id}">${escapeHtml(d.name)} (${d.category})</option>`).join("");
+  openModal("modalProgram");
+}
+document.getElementById("newProgramBtn").addEventListener("click", ()=> openProgramEditor(null));
+
+function renderProgBlocks(){
+  const wrap = document.getElementById("progBlocks");
+  const blocks = window._progBlocksWorking || [];
+  if(blocks.length === 0){
+    wrap.innerHTML = '<div class="empty">No drills added yet.</div>';
+    return;
+  }
+  wrap.innerHTML = blocks.map((b,i)=>{
+    const d = getDrill(b.drillId);
+    return `<div class="block-row" data-idx="${i}">
+      <div class="bname">${escapeHtml(d ? d.name : "(deleted drill)")}<div class="muted" style="font-size:10.5px;">${d?d.category:""}</div></div>
+      <input type="number" min="1" data-field="sets" value="${b.sets}" title="Sets">
+      <input type="number" min="0" data-field="value" value="${b.value}" title="Reps / distance / seconds">
+      <select data-field="unit" title="Unit">
+        <option value="reps" ${b.unit==='reps'?'selected':''}>reps</option>
+        <option value="reps-each-side" ${b.unit==='reps-each-side'?'selected':''}>reps/side</option>
+        <option value="m" ${b.unit==='m'?'selected':''}>meters</option>
+        <option value="sec" ${b.unit==='sec'?'selected':''}>seconds</option>
+      </select>
+      <input type="number" min="0" data-field="rest" value="${b.rest}" title="Rest (sec)">
+      <div class="block-handle">
+        <button data-act="up" title="Move up">&#9650;</button>
+        <button data-act="down" title="Move down">&#9660;</button>
+        <button data-act="del" title="Remove" style="color:var(--danger);">&times;</button>
+      </div>
+    </div>`;
+  }).join("");
+  wrap.querySelectorAll(".block-row").forEach(row=>{
+    const idx = Number(row.dataset.idx);
+    row.querySelectorAll("input,select").forEach(inp=>{
+      inp.addEventListener("change", ()=>{
+        window._progBlocksWorking[idx][inp.dataset.field] = inp.type==="number" ? Number(inp.value) : inp.value;
+      });
+    });
+    row.querySelector('[data-act="up"]').addEventListener("click", ()=>{
+      if(idx===0) return;
+      const arr = window._progBlocksWorking;
+      [arr[idx-1],arr[idx]] = [arr[idx],arr[idx-1]];
+      renderProgBlocks();
+    });
+    row.querySelector('[data-act="down"]').addEventListener("click", ()=>{
+      const arr = window._progBlocksWorking;
+      if(idx===arr.length-1) return;
+      [arr[idx+1],arr[idx]] = [arr[idx],arr[idx+1]];
+      renderProgBlocks();
+    });
+    row.querySelector('[data-act="del"]').addEventListener("click", ()=>{
+      window._progBlocksWorking.splice(idx,1);
+      renderProgBlocks();
+    });
+  });
+}
+document.getElementById("progAddBlockBtn").addEventListener("click", ()=>{
+  const drillId = document.getElementById("progAddDrillSelect").value;
+  if(!drillId) return;
+  const d = getDrill(drillId);
+  window._progBlocksWorking.push({id:uid("blk"), drillId, sets:3, value: d && d.dose && /\d/.test(d.dose) ? (parseInt(d.dose.match(/\d+/)[0])||10) : 10, unit:"reps", rest:30, notes:""});
+  renderProgBlocks();
+});
+document.getElementById("progSaveBtn").addEventListener("click", ()=>{
+  const name = document.getElementById("progName").value.trim();
+  if(!name){ toast("Give the program a name"); return; }
+  const blocks = window._progBlocksWorking || [];
+  if(_editingProgramId){
+    const prog = state.programs.find(p=>p.id===_editingProgramId);
+    prog.name = name;
+    prog.description = document.getElementById("progDesc").value.trim();
+    prog.blocks = blocks;
+  } else {
+    state.programs.push({
+      id: uid("prog"), name,
+      description: document.getElementById("progDesc").value.trim(),
+      blocks
+    });
+  }
+  saveState();
+  closeModal("modalProgram");
+  renderPrograms();
+  renderDashboard();
+  toast("Program saved");
+});
+
+/* ============================== ATHLETES ============================== */
+function renderAthletes(){
+  const tbody = document.getElementById("athleteTbody");
+  document.getElementById("athleteEmpty").style.display = state.athletes.length ? "none" : "block";
+  tbody.innerHTML = state.athletes.map(a=>`
+    <tr data-id="${a.id}">
+      <td>${escapeHtml(a.name)}</td>
+      <td>${escapeHtml(a.group||"-")}</td>
+      <td class="muted">${escapeHtml(a.notes||"-")}</td>
+      <td style="text-align:right;">
+        <button class="btn secondary small" data-act="edit">Edit</button>
+        <button class="btn danger small" data-act="del">Delete</button>
+      </td>
+    </tr>
+  `).join("");
+  tbody.querySelectorAll("tr").forEach(row=>{
+    const id = row.dataset.id;
+    row.querySelector('[data-act="edit"]').addEventListener("click", ()=> openAthleteEditor(id));
+    row.querySelector('[data-act="del"]').addEventListener("click", ()=>{
+      if(!confirm("Remove this athlete from the roster?")) return;
+      state.athletes = state.athletes.filter(a=>a.id!==id);
+      saveState();
+      renderAthletes();
+      toast("Athlete removed");
+    });
+  });
+}
+let _editingAthleteId = null;
+function openAthleteEditor(id){
+  _editingAthleteId = id || null;
+  const a = id ? state.athletes.find(x=>x.id===id) : {name:"",group:"",notes:""};
+  document.getElementById("athleteEditorTitle").textContent = id ? "Edit athlete" : "Add athlete";
+  document.getElementById("athName").value = a.name;
+  document.getElementById("athGroup").value = a.group||"";
+  document.getElementById("athNotes").value = a.notes||"";
+  openModal("modalAthlete");
+}
+document.getElementById("newAthleteBtn").addEventListener("click", ()=> openAthleteEditor(null));
+document.getElementById("athleteForm").addEventListener("submit", (e)=>{
+  e.preventDefault();
+  const name = document.getElementById("athName").value.trim();
+  if(!name) return;
+  if(_editingAthleteId){
+    const a = state.athletes.find(x=>x.id===_editingAthleteId);
+    a.name = name; a.group = document.getElementById("athGroup").value.trim(); a.notes = document.getElementById("athNotes").value.trim();
+  } else {
+    state.athletes.push({id:uid("ath"), name, group:document.getElementById("athGroup").value.trim(), notes:document.getElementById("athNotes").value.trim()});
+  }
+  saveState();
+  closeModal("modalAthlete");
+  renderAthletes();
+  renderDashboard();
+  toast("Athlete saved");
+});
+
+/* ============================== CALENDAR ============================== */
+let calViewDate = new Date();
+function renderCalendar(){
+  const year = calViewDate.getFullYear();
+  const month = calViewDate.getMonth();
+  document.getElementById("calMonthLabel").textContent = calViewDate.toLocaleDateString(undefined,{month:"long",year:"numeric"});
+
+  const dowWrap = document.getElementById("calDow");
+  dowWrap.innerHTML = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].map(d=>`<div class="cal-dow">${d}</div>`).join("");
+
+  const firstOfMonth = new Date(year, month, 1);
+  const startDow = firstOfMonth.getDay();
+  const gridStart = new Date(year, month, 1 - startDow);
+  const cells = [];
+  for(let i=0;i<42;i++){
+    const d = new Date(gridStart);
+    d.setDate(gridStart.getDate()+i);
+    cells.push(d);
+  }
+  const todayKey = todayStr();
+  const grid = document.getElementById("calGrid");
+  grid.innerHTML = cells.map(d=>{
+    const key = fmtDate(d);
+    const inMonth = d.getMonth() === month;
+    const sessions = state.sessions.filter(s=>s.date===key);
+    return `<div class="cal-day ${inMonth?'':'other-month'} ${key===todayKey?'today':''}" data-date="${key}">
+      <div class="daynum">${d.getDate()}</div>
+      ${sessions.slice(0,3).map(s=>{
+        const prog = state.programs.find(p=>p.id===s.programId);
+        return `<div class="sess-pill">${escapeHtml(prog?prog.name:'(deleted)')}</div>`;
+      }).join("")}
+      ${sessions.length>3 ? `<div class="muted" style="font-size:10px;">+${sessions.length-3} more</div>` : ""}
+    </div>`;
+  }).join("");
+  grid.querySelectorAll(".cal-day").forEach(cell=>{
+    cell.addEventListener("click", ()=> openDayModal(cell.dataset.date));
+  });
+}
+document.getElementById("calPrev").addEventListener("click", ()=>{
+  calViewDate.setMonth(calViewDate.getMonth()-1); renderCalendar();
+});
+document.getElementById("calNext").addEventListener("click", ()=>{
+  calViewDate.setMonth(calViewDate.getMonth()+1); renderCalendar();
+});
+document.getElementById("calToday").addEventListener("click", ()=>{
+  calViewDate = new Date(); renderCalendar();
+});
+
+let _dayModalDate = null;
+function openDayModal(dateStr){
+  _dayModalDate = dateStr;
+  const d = new Date(dateStr+"T00:00:00");
+  document.getElementById("dayTitle").textContent = d.toLocaleDateString(undefined,{weekday:"long",month:"long",day:"numeric",year:"numeric"});
+
+  renderDayExisting();
+
+  const progSel = document.getElementById("sessProgram");
+  progSel.innerHTML = state.programs.length
+    ? state.programs.map(p=>`<option value="${p.id}">${escapeHtml(p.name)}</option>`).join("")
+    : '<option value="">No programs yet</option>';
+
+  const checksWrap = document.getElementById("sessAthleteChecks");
+  checksWrap.innerHTML = state.athletes.length
+    ? state.athletes.map(a=>`<label><input type="checkbox" value="${a.id}" data-group="${escapeHtml(a.group||'')}"> ${escapeHtml(a.name)}${a.group?(' <span class="muted">('+escapeHtml(a.group)+')</span>'):''}</label>`).join("")
+    : '<span class="muted" style="font-size:12px;">No athletes in roster yet.</span>';
+
+  const groupSel = document.getElementById("sessGroupSelect");
+  const groups = Array.from(new Set(state.athletes.map(a=>(a.group||"").trim()).filter(Boolean))).sort();
+  groupSel.innerHTML = '<option value="">Pick a group...</option>' + groups.map(g=>`<option value="${escapeHtml(g)}">${escapeHtml(g)}</option>`).join("");
+
+  document.getElementById("sessWholeSquad").checked = true;
+  document.querySelectorAll("#sessAthleteChecks input").forEach(cb=> cb.disabled = true);
+  document.getElementById("sessAthleteChecks").style.opacity = 0.4;
+  document.getElementById("sessNotes").value = "";
+  openModal("modalDay");
+}
+function renderDayExisting(){
+  const sessions = state.sessions.filter(s=>s.date===_dayModalDate).sort((a,b)=>(a.time||"").localeCompare(b.time||""));
+  const wrap = document.getElementById("dayExisting");
+  wrap.innerHTML = sessions.length
+    ? sessions.map(s=>{
+        const prog = state.programs.find(p=>p.id===s.programId);
+        return `<div class="sess-item ${s.completed?'completed':''}" data-id="${s.id}">
+          <div>
+            <div class="sname">${escapeHtml(prog?prog.name:'(deleted program)')} ${s.completed?'&#10003;':''}</div>
+            <div class="smeta">${s.time||'--'} &middot; ${escapeHtml(sessionAssigneeNames(s))} ${s.notes?(' &middot; '+escapeHtml(s.notes)):''}</div>
+          </div>
+          <div class="sactions">
+            <button class="btn secondary small" data-act="complete">${s.completed?'Undo':'Done'}</button>
+            <button class="btn danger small" data-act="del">Remove</button>
+          </div>
+        </div>`;
+      }).join("")
+    : '<div class="empty">Nothing scheduled this day yet.</div>';
+  wrap.querySelectorAll(".sess-item").forEach(item=>{
+    const id = item.dataset.id;
+    item.querySelector('[data-act="complete"]').addEventListener("click", ()=>{
+      const s = state.sessions.find(x=>x.id===id);
+      s.completed = !s.completed;
+      saveState();
+      renderDayExisting();
+      renderCalendar();
+    });
+    item.querySelector('[data-act="del"]').addEventListener("click", ()=>{
+      state.sessions = state.sessions.filter(x=>x.id!==id);
+      saveState();
+      renderDayExisting();
+      renderCalendar();
+      renderDashboard();
+    });
+  });
+}
+document.getElementById("sessWholeSquad").addEventListener("change", (e)=>{
+  document.getElementById("sessAthleteChecks").style.opacity = e.target.checked ? 0.4 : 1;
+  document.querySelectorAll("#sessAthleteChecks input").forEach(cb=> cb.disabled = e.target.checked);
+});
+document.getElementById("sessSelectGroupBtn").addEventListener("click", ()=>{
+  const group = document.getElementById("sessGroupSelect").value;
+  if(!group){ toast("Pick a group first"); return; }
+  document.getElementById("sessWholeSquad").checked = false;
+  document.getElementById("sessAthleteChecks").style.opacity = 1;
+  document.querySelectorAll("#sessAthleteChecks input").forEach(cb=>{
+    cb.disabled = false;
+    cb.checked = (cb.dataset.group === group);
+  });
+  toast(`Selected all athletes in "${group}"`);
+});
+document.getElementById("sessAddBtn").addEventListener("click", ()=>{
+  const programId = document.getElementById("sessProgram").value;
+  if(!programId){ toast("Create a program first"); return; }
+  const wholeSquad = true;
+  const athleteIds = [];
+  state.sessions.push({
+    id: uid("sess"),
+    date: _dayModalDate,
+    time: document.getElementById("sessTime").value,
+    programId,
+    wholeSquad,
+    athleteIds,
+    notes: document.getElementById("sessNotes").value.trim(),
+    completed: false
+  });
+  saveState();
+  renderDayExisting();
+  renderCalendar();
+  renderDashboard();
+  toast("Session scheduled");
+});
+
+/* ============================== BACKUP / RESTORE ============================== */
+document.getElementById("exportBtn").addEventListener("click", ()=>{
+  const blob = new Blob([JSON.stringify(state, null, 2)], {type:"application/json"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "speed-agility-coach-backup-" + todayStr() + ".json";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  toast("Backup downloaded");
+});
+document.getElementById("importBtn").addEventListener("click", ()=>{
+  document.getElementById("importFile").click();
+});
+document.getElementById("importFile").addEventListener("change", (e)=>{
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev)=>{
+    try{
+      const data = JSON.parse(ev.target.result);
+      if(!confirm("This will replace all current data with the backup file. Continue?")) return;
+      state = {
+        athletes: data.athletes || [],
+        programs: data.programs || [],
+        sessions: data.sessions || [],
+        customDrills: data.customDrills || []
+      };
+      saveState();
+      renderDashboard(); renderLibrary(); renderPrograms(); renderCalendar(); renderAthletes();
+      toast("Backup restored");
+    }catch(err){
+      alert("Could not read that file as a valid backup.");
+    }
+  };
+  reader.readAsText(file);
+  e.target.value = "";
+});
+
+/* ============================== INIT ============================== */
+populateCategorySelects();
+renderDashboard();
+gotoTab("dashboard");
+</script>
+</body>
+</html>
