@@ -1213,7 +1213,6 @@ export default function SpeedDesk() {
         {tab === "program" && <Program drillById={drillById} programs={programs} setPrograms={setPrograms} />}
         {tab === "calendar" && (
           <Calendar
-            athletes={athletes}
             programs={programs}
             calendarEvents={calendarEvents}
             setCalendarEvents={setCalendarEvents}
@@ -1594,8 +1593,7 @@ function Program({ drillById, programs, setPrograms }) {
   );
 }
 
-function Calendar({ athletes, programs, calendarEvents, setCalendarEvents }) {
-  const groups = groupsFromAthletes(athletes);
+function Calendar({ programs, calendarEvents, setCalendarEvents }) {
   const [event, setEvent] = useState({
     date: today(),
     time: "17:30",
@@ -1607,11 +1605,15 @@ function Calendar({ athletes, programs, calendarEvents, setCalendarEvents }) {
     notes: "",
   });
 
-  const targetOptions = event.targetType === "athlete" ? athletes : groups.map((group) => ({ id: group, name: group }));
-
   const addEvent = () => {
     if (!event.title.trim()) return;
-    setCalendarEvents([{ id: uid(), ...event, title: event.title.trim() }, ...calendarEvents]);
+    setCalendarEvents([{
+      id: uid(),
+      ...event,
+      title: event.title.trim(),
+      targetType: "squad",
+      targetId: "squad",
+    }, ...calendarEvents]);
   };
 
   const deleteEvent = (id) => {
@@ -1620,7 +1622,7 @@ function Calendar({ athletes, programs, calendarEvents, setCalendarEvents }) {
 
   return (
     <>
-      <Panel title="Schedule Workout" sub="Assign a program to one player, a group, or the whole squad">
+      <Panel title="Schedule Workout" sub="Every scheduled program goes to the whole active roster">
         <div className="form-grid">
           <Field label="Date">
             <input className="input" type="date" value={event.date} onChange={(change) => setEvent({ ...event, date: change.target.value })} />
@@ -1642,26 +1644,8 @@ function Calendar({ athletes, programs, calendarEvents, setCalendarEvents }) {
             </select>
           </Field>
           <Field label="Send to">
-            <select
-              className="input"
-              value={event.targetType}
-              onChange={(change) => setEvent({ ...event, targetType: change.target.value, targetId: change.target.value === "squad" ? "squad" : "" })}
-            >
-              <option value="squad">Whole squad</option>
-              <option value="group">Group</option>
-              <option value="athlete">Player</option>
-            </select>
+            <input className="input" value="Whole squad" readOnly />
           </Field>
-          {event.targetType !== "squad" && (
-            <Field label={event.targetType === "athlete" ? "Player" : "Group"}>
-              <select className="input" value={event.targetId} onChange={(change) => setEvent({ ...event, targetId: change.target.value })}>
-                <option value="">Choose...</option>
-                {targetOptions.map((option) => (
-                  <option key={option.id} value={option.id}>{option.name}</option>
-                ))}
-              </select>
-            </Field>
-          )}
         </div>
         <textarea className="text-area" value={event.notes} onChange={(change) => setEvent({ ...event, notes: change.target.value })} placeholder="Arrival notes, equipment, field number" />
         <SaveBtn onClick={addEvent} label="Schedule Session" />

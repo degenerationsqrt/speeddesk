@@ -246,7 +246,7 @@ hr.sep{border:none; border-top:1px solid var(--border); margin:18px 0;}
           </div>
           <div class="card">
             <h3>3. Schedule &amp; assign</h3>
-            <p class="muted" style="font-size:12.5px;">Put a program on the calendar for an athlete or the whole squad.</p>
+            <p class="muted" style="font-size:12.5px;">Put a program on the calendar for the whole roster.</p>
             <button class="btn secondary small" data-goto="calendar">Open calendar</button>
           </div>
         </div>
@@ -289,7 +289,7 @@ hr.sep{border:none; border-top:1px solid var(--border); margin:18px 0;}
       <div class="page-head">
         <div>
           <h1>Calendar</h1>
-          <div class="desc">Schedule programs for athletes or the whole squad.</div>
+          <div class="desc">Schedule programs for the whole roster.</div>
         </div>
       </div>
       <div class="cal-head">
@@ -310,7 +310,7 @@ hr.sep{border:none; border-top:1px solid var(--border); margin:18px 0;}
       <div class="page-head">
         <div>
           <h1>Athletes</h1>
-          <div class="desc">Your roster &mdash; assign programs and sessions to individuals or groups.</div>
+          <div class="desc">Your roster &mdash; scheduled programs go to everyone on this list.</div>
         </div>
         <button class="btn" id="newAthleteBtn">+ Add athlete</button>
       </div>
@@ -421,14 +421,13 @@ hr.sep{border:none; border-top:1px solid var(--border); margin:18px 0;}
       <div class="field"><label>Time</label><input type="time" id="sessTime" value="16:00"></div>
     </div>
     <div class="field">
-      <label>Assign to</label>
+      <label>Send to</label>
       <div class="flexrow" style="margin-bottom:8px; flex-wrap:wrap;">
-        <label style="font-size:12.5px;"><input type="checkbox" id="sessWholeSquad"> Whole roster</label>
-        <span class="muted" style="font-size:11.5px;">or by group:</span>
-        <select id="sessGroupSelect" style="font-size:12px; padding:5px 8px;"><option value="">Pick a group...</option></select>
-        <button type="button" class="btn secondary small" id="sessSelectGroupBtn">Select group</button>
+        <label style="font-size:12.5px;"><input type="checkbox" id="sessWholeSquad" checked disabled> Whole roster</label>
+        <select id="sessGroupSelect" style="display:none;"><option value="">Pick a group...</option></select>
+        <button type="button" class="btn secondary small" id="sessSelectGroupBtn" style="display:none;">Select group</button>
       </div>
-      <div class="checks" id="sessAthleteChecks"></div>
+      <div class="checks" id="sessAthleteChecks" style="display:none;"></div>
     </div>
     <div class="field"><label>Notes</label><input type="text" id="sessNotes"></div>
     <div class="modal-actions">
@@ -1220,9 +1219,9 @@ function openDayModal(dateStr){
   const groups = Array.from(new Set(state.athletes.map(a=>(a.group||"").trim()).filter(Boolean))).sort();
   groupSel.innerHTML = '<option value="">Pick a group...</option>' + groups.map(g=>`<option value="${escapeHtml(g)}">${escapeHtml(g)}</option>`).join("");
 
-  document.getElementById("sessWholeSquad").checked = false;
-  document.querySelectorAll("#sessAthleteChecks input").forEach(cb=> cb.disabled = false);
-  document.getElementById("sessAthleteChecks").style.opacity = 1;
+  document.getElementById("sessWholeSquad").checked = true;
+  document.querySelectorAll("#sessAthleteChecks input").forEach(cb=> cb.disabled = true);
+  document.getElementById("sessAthleteChecks").style.opacity = 0.4;
   document.getElementById("sessNotes").value = "";
   openModal("modalDay");
 }
@@ -1280,8 +1279,8 @@ document.getElementById("sessSelectGroupBtn").addEventListener("click", ()=>{
 document.getElementById("sessAddBtn").addEventListener("click", ()=>{
   const programId = document.getElementById("sessProgram").value;
   if(!programId){ toast("Create a program first"); return; }
-  const wholeSquad = document.getElementById("sessWholeSquad").checked;
-  const athleteIds = wholeSquad ? [] : Array.from(document.querySelectorAll("#sessAthleteChecks input:checked")).map(cb=>cb.value);
+  const wholeSquad = true;
+  const athleteIds = [];
   state.sessions.push({
     id: uid("sess"),
     date: _dayModalDate,
