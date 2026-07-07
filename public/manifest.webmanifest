@@ -1,7 +1,7 @@
 {
-  "name": "SpeedDesk",
-  "short_name": "SpeedDesk",
-  "description": "A speed, agility, plyometric, and soccer drill tracker with local logs and trends.",
+  "name": "Apex Predator Elite",
+  "short_name": "Apex Elite",
+  "description": "An elite speed, agility, plyometric, and soccer drill tracker with local logs and trends.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

@@ -1,6 +1,6 @@
-# SpeedDesk
+# Apex Predator Elite
 
-SpeedDesk is a local React app for speed, agility, plyometric, and soccer drill planning. It is modeled after IronDesk's mobile-first local journal, but uses the speed-folder workbooks, PDFs, DOCX, and technical-touch trackers as its drill/program source material.
+Apex Predator Elite is a GitHub Pages-ready React app for speed, agility, plyometric, and soccer drill planning. It packages the Apex Predator Elite training workflow into a deployable Vite project with local data storage, installable PWA metadata, and the original standalone HTML version preserved in `public/apex-predator-elite.html`.
 
 ## Current Features
 
@@ -29,6 +29,16 @@ http://127.0.0.1:5173/
 npm run build
 ```
 
+## GitHub Pages
+
+The repository includes a GitHub Actions workflow that builds the app and deploys `dist` to GitHub Pages after pushes to `main`.
+
+The standalone source file is also copied into the public build and can be opened at:
+
+```text
+./apex-predator-elite.html
+```
+
 ## Install On A Phone
 
 After deploying the built app to an HTTPS host, open it on your phone and use the browser's install action:
@@ -36,4 +46,4 @@ After deploying the built app to an HTTPS host, open it on your phone and use th
 - Android Chrome: tap the browser menu, then install or add to home screen.
 - iPhone Safari: tap Share, then Add to Home Screen.
 
-Data is stored in the browser with `localStorage` through the app's `window.storage` adapter. Use the in-app backup export before clearing browser storage or moving to another computer.
+Data is stored locally in the browser through the app's `window.storage` adapter. Use the in-app backup export before clearing browser storage or moving to another computer.

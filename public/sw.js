@@ -1,9 +1,10 @@
-const CACHE_NAME = "speeddesk-v1";
+const CACHE_NAME = "apex-predator-elite-v1";
 const scopeUrl = new URL("./", self.registration.scope);
 const APP_SHELL = [
   "./",
   "manifest.webmanifest",
   "favicon.svg",
+  "apex-predator-elite.html",
   "icons/apple-touch-icon.png",
   "icons/icon-192.png",
   "icons/icon-512.png",
