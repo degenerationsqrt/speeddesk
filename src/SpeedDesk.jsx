@@ -1,4 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
+import AthletePortal from "./pages/AthletePortal.jsx";
+import TeamSync from "./pages/TeamSync.jsx";
 import {
   Bar,
   BarChart,
@@ -929,6 +931,7 @@ const TABS = [
   { key: "team", label: "Team" },
   { key: "program", label: "Programs" },
   { key: "calendar", label: "Calendar" },
+  { key: "sync", label: "Sync" },
   { key: "email", label: "Email" },
   { key: "drills", label: "Drills" },
   { key: "log", label: "Log" },
@@ -1042,6 +1045,13 @@ function buildSessionEmail(event, programs, athletes) {
 }
 
 export default function SpeedDesk() {
+  const inviteCode = new URLSearchParams(window.location.search).get("team");
+  if (inviteCode) return <AthletePortal inviteCode={inviteCode} />;
+
+  return <CoachApp />;
+}
+
+function CoachApp() {
   const [tab, setTab] = useState("today");
   const [selectedDay, setSelectedDay] = useState(currentDayName());
   const [readiness, setReadiness] = useState(4);
@@ -1213,9 +1223,21 @@ export default function SpeedDesk() {
         {tab === "program" && <Program drillById={drillById} programs={programs} setPrograms={setPrograms} />}
         {tab === "calendar" && (
           <Calendar
+            athletes={athletes}
             programs={programs}
             calendarEvents={calendarEvents}
             setCalendarEvents={setCalendarEvents}
+          />
+        )}
+        {tab === "sync" && (
+          <TeamSync
+            athletes={athletes}
+            programs={programs}
+            calendarEvents={calendarEvents}
+            onFlash={(note) => {
+              setFlash(note);
+              setTimeout(() => setFlash(""), 1600);
+            }}
           />
         )}
         {tab === "email" && <EmailCenter athletes={athletes} programs={programs} calendarEvents={calendarEvents} />}
@@ -1593,7 +1615,7 @@ function Program({ drillById, programs, setPrograms }) {
   );
 }
 
-function Calendar({ programs, calendarEvents, setCalendarEvents }) {
+function Calendar({ athletes, programs, calendarEvents, setCalendarEvents }) {
   const [event, setEvent] = useState({
     date: today(),
     time: "17:30",

@@ -582,6 +582,75 @@ textarea {
   padding: 9px;
 }
 
+.sync-status-row,
+.sync-actions,
+.sync-row {
+  align-items: center;
+  display: flex;
+  gap: 10px;
+}
+
+.sync-status-row,
+.sync-row {
+  justify-content: space-between;
+}
+
+.sync-status-row {
+  margin-bottom: 12px;
+}
+
+.sync-actions {
+  margin: 12px 0;
+}
+
+.sync-note {
+  background: #101611;
+  border: 1px solid #253128;
+  border-radius: 8px;
+  color: #d6ded9;
+  font-size: 12px;
+  line-height: 1.4;
+  margin-top: 10px;
+  padding: 10px;
+}
+
+.sync-list {
+  display: grid;
+  gap: 9px;
+}
+
+.sync-row {
+  background: #101611;
+  border: 1px solid #253128;
+  border-radius: 8px;
+  padding: 11px;
+}
+
+.athlete-session {
+  align-items: flex-start;
+}
+
+.status-pill {
+  border: 1px solid #253128;
+  border-radius: 999px;
+  display: inline-flex;
+  flex: 0 0 auto;
+  font-size: 10px;
+  font-weight: 800;
+  padding: 5px 8px;
+  text-transform: uppercase;
+}
+
+.status-pill.green {
+  border-color: rgba(34, 197, 94, 0.55);
+  color: #22c55e;
+}
+
+.status-pill.gold {
+  border-color: rgba(246, 196, 83, 0.55);
+  color: #f6c453;
+}
+
 .coach-card {
   background: #101611;
   border: 1px solid #253128;
