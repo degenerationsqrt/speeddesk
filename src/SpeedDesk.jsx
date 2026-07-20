@@ -1,11 +1,11 @@
 import React, { Suspense, lazy, useEffect, useMemo, useState } from "react";
 import {
-  ELIJAH_WORKBOOK_DRILLS,
-  ELIJAH_WORKBOOK_PROGRAMS,
-  ELIJAH_WORKBOOK_SCORE_TARGETS,
-  ELIJAH_WORKBOOK_SOURCE,
-  ELIJAH_WORKBOOK_WEEKLY_PLAN,
-} from "./data/elijahWorkbook.js";
+  TOTAL_FUTBALL_WORKOUT_DRILLS,
+  TOTAL_FUTBALL_WORKOUT_PROGRAMS,
+  TOTAL_FUTBALL_WORKOUT_SCORE_TARGETS,
+  TOTAL_FUTBALL_WORKOUT_SOURCE,
+  TOTAL_FUTBALL_WORKOUT_WEEKLY_PLAN,
+} from "./data/totalFutballWorkout.js";
 
 const AthletePortal = lazy(() => import("./pages/AthletePortal.jsx"));
 const TeamSync = lazy(() => import("./pages/TeamSync.jsx"));
@@ -34,7 +34,7 @@ const CATEGORY_COLORS = {
 
 const SOURCE_LABELS = {
   workbook: "Training Workbook.xlsx",
-  elijahWorkbook: ELIJAH_WORKBOOK_SOURCE.fileName,
+  totalFutballWorkout: TOTAL_FUTBALL_WORKOUT_SOURCE.fileName,
   drills: "DRILLS.xlsx",
   closeControl: "Close_Control_Dribbling_Tracker.xlsx",
   advancedTouch: "Advanced_Technical_Touch_Tracker.xlsx",
@@ -778,10 +778,10 @@ const DRILLS = [
     source: SOURCE_LABELS.workbook,
     cues: ["Light contacts", "Stay relaxed", "Use as warm-up or recovery"],
   },
-  ...ELIJAH_WORKBOOK_DRILLS,
+  ...TOTAL_FUTBALL_WORKOUT_DRILLS,
 ];
 
-const WEEKLY_PLAN = ELIJAH_WORKBOOK_WEEKLY_PLAN;
+const WEEKLY_PLAN = TOTAL_FUTBALL_WORKOUT_WEEKLY_PLAN;
 
 const DEFAULT_ATHLETES = [
   { id: "ath-jayden", name: "Jayden", email: "", group: "Attackers", status: "Active", notes: "First-step and close-control focus" },
@@ -811,7 +811,7 @@ const DEFAULT_PROGRAMS = [
     notes: "Change of direction with a reaction component for small groups.",
     drills: ["mirror-drill", "short-lateral-shuttle", "five-ten-five", "skater-jumps"],
   },
-  ...ELIJAH_WORKBOOK_PROGRAMS,
+  ...TOTAL_FUTBALL_WORKOUT_PROGRAMS,
 ];
 
 const DEFAULT_CALENDAR_EVENTS = [
@@ -838,7 +838,7 @@ const BENCHMARKS = [
   { id: "vertical-jump", name: "Vertical Jump", category: "Plyometrics", unit: "in", lowerBetter: false, source: SOURCE_LABELS.plyoDoc },
   { id: "tempo-100-test", name: "Tempo 100m Average", category: "Recovery", unit: "sec", lowerBetter: true, source: SOURCE_LABELS.workbook },
   { id: "stanford-fitness", name: "Stanford Soccer Fitness", category: "Recovery", unit: "score", lowerBetter: false, source: SOURCE_LABELS.stanford },
-  ...ELIJAH_WORKBOOK_SCORE_TARGETS,
+  ...TOTAL_FUTBALL_WORKOUT_SCORE_TARGETS,
 ];
 
 const TABS = [
@@ -1117,6 +1117,21 @@ function CoachApp() {
   const drillById = useMemo(() => Object.fromEntries(DRILLS.map((x) => [x.id, x])), []);
   const plan = WEEKLY_PLAN.find((x) => x.day === selectedDay) || WEEKLY_PLAN[0];
   const estimate = estimateSession(selectedDay, readiness);
+  const activeRoutine = useMemo(() => ({
+    day: selectedDay,
+    focus: plan.focus,
+    sessionType: plan.sessionType || plan.focus,
+    intent: plan.intent,
+    minutes: estimate.minutes,
+    trainingLoad: estimate.trainingLoad,
+    rpe: plan.rpe,
+    intensity: plan.intensity,
+    parentMode: plan.parentMode,
+    nonNegotiable: plan.nonNegotiable,
+    notes: plan.notes,
+    programId: plan.programId || "",
+    blocks: (plan.blocks || []).map((block) => hydratePlanBlock(block, drillById)),
+  }), [drillById, estimate.minutes, estimate.trainingLoad, plan, selectedDay]);
 
   return (
     <div className="app-shell">
@@ -1174,6 +1189,7 @@ function CoachApp() {
               athletes={athletes}
               programs={programs}
               calendarEvents={calendarEvents}
+              activeRoutine={activeRoutine}
               onFlash={(note) => {
                 setFlash(note);
                 setTimeout(() => setFlash(""), 1600);
@@ -1431,26 +1447,26 @@ function Team({ athletes, setAthletes }) {
   );
 }
 
-function WorkbookPack({ onLoadProgram }) {
+function WorkoutPack({ onLoadProgram }) {
   return (
-    <Panel title="Elijah Workbook" sub={`${ELIJAH_WORKBOOK_SOURCE.identity} - saved ${ELIJAH_WORKBOOK_SOURCE.savedDate}`}>
+    <Panel title="Total Futball Workout" sub={`${TOTAL_FUTBALL_WORKOUT_SOURCE.identity} - saved ${TOTAL_FUTBALL_WORKOUT_SOURCE.savedDate}`}>
       <div className="metric-grid">
-        <Metric label="Minutes" value={ELIJAH_WORKBOOK_SOURCE.summary.plannedMinutes} accent="orange" />
-        <Metric label="Load" value={ELIJAH_WORKBOOK_SOURCE.summary.trainingLoad} accent="gold" />
-        <Metric label="Hard Days" value={ELIJAH_WORKBOOK_SOURCE.summary.hardIndividualDays} accent="green" />
+        <Metric label="Minutes" value={TOTAL_FUTBALL_WORKOUT_SOURCE.summary.plannedMinutes} accent="orange" />
+        <Metric label="Load" value={TOTAL_FUTBALL_WORKOUT_SOURCE.summary.trainingLoad} accent="gold" />
+        <Metric label="Hard Days" value={TOTAL_FUTBALL_WORKOUT_SOURCE.summary.hardIndividualDays} accent="green" />
       </div>
       <div className="detail-row">
-        <span>{ELIJAH_WORKBOOK_SOURCE.plan}</span>
-        <span>{ELIJAH_WORKBOOK_SOURCE.rule}</span>
-        <span>{ELIJAH_WORKBOOK_SOURCE.summary.restDays} rest day</span>
+        <span>{TOTAL_FUTBALL_WORKOUT_SOURCE.plan}</span>
+        <span>{TOTAL_FUTBALL_WORKOUT_SOURCE.rule}</span>
+        <span>{TOTAL_FUTBALL_WORKOUT_SOURCE.summary.restDays} rest day</span>
       </div>
       <div className="button-row">
-        <a className="ghost-btn link-btn" href={ELIJAH_WORKBOOK_SOURCE.downloadPath} download>
+        <a className="ghost-btn link-btn" href={TOTAL_FUTBALL_WORKOUT_SOURCE.downloadPath} download>
           Download Workbook
         </a>
       </div>
       <div className="benchmark-grid workbook-program-grid">
-        {ELIJAH_WORKBOOK_PROGRAMS.map((program) => (
+        {TOTAL_FUTBALL_WORKOUT_PROGRAMS.map((program) => (
           <button className="benchmark-card" type="button" key={program.id} onClick={() => onLoadProgram(program)}>
             <Badge category={program.focus} />
             <span>{program.name}</span>
@@ -1500,7 +1516,7 @@ function Program({ drillById, programs, setPrograms }) {
 
   return (
     <>
-      <WorkbookPack onLoadProgram={loadWorkbookProgram} />
+      <WorkoutPack onLoadProgram={loadWorkbookProgram} />
 
       <Panel title="Build Program" sub="Create a reusable training session from library drills">
         <div className="form-grid">

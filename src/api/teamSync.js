@@ -22,7 +22,7 @@ export function buildInviteUrl(inviteCode) {
   return url.toString();
 }
 
-export function buildTeamSnapshot({ team, athletes, programs, calendarEvents }) {
+export function buildTeamSnapshot({ team, athletes, programs, calendarEvents, activeRoutine }) {
   return {
     team: {
       id: team.id,
@@ -33,8 +33,9 @@ export function buildTeamSnapshot({ team, athletes, programs, calendarEvents }) 
     athletes,
     programs,
     sessions: calendarEvents,
+    activeRoutine,
     syncedAt: new Date().toISOString(),
-    version: 1,
+    version: 2,
   };
 }
 

@@ -9,8 +9,8 @@ function formatSyncTime(value) {
   return new Date(value).toLocaleString([], { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
 }
 
-export default function TeamSync({ athletes, programs, calendarEvents, onFlash }) {
-  const sync = useTeamSync({ athletes, programs, calendarEvents, onFlash });
+export default function TeamSync({ athletes, programs, calendarEvents, activeRoutine, onFlash }) {
+  const sync = useTeamSync({ athletes, programs, calendarEvents, activeRoutine, onFlash });
   const activeAthletes = athletes.filter((athlete) => athlete.status !== "Inactive");
   const upcomingSessions = calendarEvents.slice(0, 5);
   const connectionLabel = sync.setup.isConfigured ? "Cloud ready" : "Setup needed";
@@ -27,7 +27,7 @@ export default function TeamSync({ athletes, programs, calendarEvents, onFlash }
 
   return (
     <>
-      <Panel title="Team Sync" sub="Take Apex Predator Elite live outside GitHub and keep the roster on one shared schedule">
+      <Panel title="Team Sync" sub="Share one invite code so athlete apps follow the routine you select">
         <div className="sync-status-row">
           <StatusPill tone={sync.setup.isConfigured ? "green" : "gold"} label={connectionLabel} />
           <span className="muted">Last sync: {formatSyncTime(sync.team.lastSyncedAt)}</span>
@@ -38,6 +38,12 @@ export default function TeamSync({ athletes, programs, calendarEvents, onFlash }
           <Metric label="Programs" value={programs.length} accent="orange" />
           <Metric label="Scheduled" value={calendarEvents.length} accent="gold" />
         </div>
+
+        {activeRoutine && (
+          <div className="sync-note">
+            <strong>Selected routine:</strong> {activeRoutine.day} - {activeRoutine.focus} ({activeRoutine.minutes} min, load {activeRoutine.trainingLoad})
+          </div>
+        )}
 
         <div className="form-grid">
           <Field label="Team name">
@@ -68,7 +74,7 @@ export default function TeamSync({ athletes, programs, calendarEvents, onFlash }
         )}
 
         <button className="save-btn" type="button" onClick={sync.syncNow}>
-          {sync.status === "syncing" ? "Syncing..." : "Sync roster and schedule"}
+          {sync.status === "syncing" ? "Syncing..." : "Sync selected routine"}
         </button>
       </Panel>
 
