@@ -435,6 +435,10 @@ textarea {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
+.workbook-program-grid {
+  margin-top: 12px;
+}
+
 .program-day {
   padding: 13px;
 }
