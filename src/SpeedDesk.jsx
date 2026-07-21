@@ -855,12 +855,22 @@ const TABS = [
 ];
 
 const STORAGE_KEY = "apex-predator-elite:v1";
+const DAY_ORDER = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
 const today = () => new Date().toISOString().slice(0, 10);
 const uid = () => Math.random().toString(36).slice(2, 9);
 const num = (value) => Number(value) || 0;
 function currentDayName() {
   return new Date().toLocaleDateString("en-US", { weekday: "long" });
+}
+
+function dateForDayName(dayName) {
+  const targetIndex = DAY_ORDER.indexOf(dayName);
+  const date = new Date();
+  if (targetIndex < 0) return date.toISOString().slice(0, 10);
+  const offset = (targetIndex - date.getDay() + 7) % 7;
+  date.setDate(date.getDate() + offset);
+  return date.toISOString().slice(0, 10);
 }
 
 function recentCut(days) {
@@ -933,6 +943,27 @@ function hydratePlanBlock(block, drillById) {
     category: block.category || drill?.category || "Recovery",
     dose: block.dose || drill?.dose || "",
     cue: block.cue || drill?.cues?.[0] || "",
+  };
+}
+
+function buildDailyRoutine(planItem, drillById, readiness) {
+  const estimate = estimateSession(planItem.day, readiness);
+  return {
+    id: `daily-${planItem.day.toLowerCase()}`,
+    date: dateForDayName(planItem.day),
+    day: planItem.day,
+    focus: planItem.focus,
+    sessionType: planItem.sessionType || planItem.focus,
+    intent: planItem.intent,
+    minutes: estimate.minutes,
+    trainingLoad: estimate.trainingLoad,
+    rpe: planItem.rpe,
+    intensity: planItem.intensity,
+    parentMode: planItem.parentMode,
+    nonNegotiable: planItem.nonNegotiable,
+    notes: planItem.notes,
+    programId: planItem.programId || "",
+    blocks: (planItem.blocks || []).map((block) => hydratePlanBlock(block, drillById)),
   };
 }
 
@@ -1117,21 +1148,14 @@ function CoachApp() {
   const drillById = useMemo(() => Object.fromEntries(DRILLS.map((x) => [x.id, x])), []);
   const plan = WEEKLY_PLAN.find((x) => x.day === selectedDay) || WEEKLY_PLAN[0];
   const estimate = estimateSession(selectedDay, readiness);
-  const activeRoutine = useMemo(() => ({
-    day: selectedDay,
-    focus: plan.focus,
-    sessionType: plan.sessionType || plan.focus,
-    intent: plan.intent,
-    minutes: estimate.minutes,
-    trainingLoad: estimate.trainingLoad,
-    rpe: plan.rpe,
-    intensity: plan.intensity,
-    parentMode: plan.parentMode,
-    nonNegotiable: plan.nonNegotiable,
-    notes: plan.notes,
-    programId: plan.programId || "",
-    blocks: (plan.blocks || []).map((block) => hydratePlanBlock(block, drillById)),
-  }), [drillById, estimate.minutes, estimate.trainingLoad, plan, selectedDay]);
+  const dailyRoutines = useMemo(
+    () => WEEKLY_PLAN.map((planItem) => buildDailyRoutine(planItem, drillById, readiness)),
+    [drillById, readiness]
+  );
+  const activeRoutine = useMemo(
+    () => dailyRoutines.find((routine) => routine.day === selectedDay) || dailyRoutines[0],
+    [dailyRoutines, selectedDay]
+  );
 
   return (
     <div className="app-shell">
@@ -1190,6 +1214,7 @@ function CoachApp() {
               programs={programs}
               calendarEvents={calendarEvents}
               activeRoutine={activeRoutine}
+              dailyRoutines={dailyRoutines}
               onFlash={(note) => {
                 setFlash(note);
                 setTimeout(() => setFlash(""), 1600);

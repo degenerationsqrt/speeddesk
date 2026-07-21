@@ -4,24 +4,46 @@ import { getSupabaseSetupState } from "../api/supabaseConfig";
 
 const POLL_MS = 20000;
 const PROGRESS_KEY_PREFIX = "speeddesk:player-progress";
+const DAY_ORDER = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
 const today = () => new Date().toISOString().slice(0, 10);
+const currentDayName = () => new Date().toLocaleDateString("en-US", { weekday: "long" });
 
 function notificationSupport() {
   if (typeof window === "undefined" || !("Notification" in window)) return "unsupported";
   return Notification.permission;
 }
 
+function routineListFromSnapshot(snapshot) {
+  if (Array.isArray(snapshot?.dailyRoutines) && snapshot.dailyRoutines.length) return snapshot.dailyRoutines;
+  return snapshot?.activeRoutine ? [snapshot.activeRoutine] : [];
+}
+
+function routineForDay(snapshot, dayName = currentDayName()) {
+  const routines = routineListFromSnapshot(snapshot);
+  return routines.find((routine) => routine.day === dayName) || snapshot?.activeRoutine || routines[0] || null;
+}
+
+function dayOffsetFromToday(dayName) {
+  const targetIndex = DAY_ORDER.indexOf(dayName);
+  if (targetIndex < 0) return 99;
+  const todayIndex = new Date().getDay();
+  return (targetIndex - todayIndex + 7) % 7;
+}
+
 function routineKey(snapshot) {
-  const routine = snapshot?.activeRoutine;
-  if (!routine) return snapshot?.syncedAt || "";
-  return [snapshot?.syncedAt, routine.day, routine.focus, routine.trainingLoad].filter(Boolean).join("|");
+  const routines = routineListFromSnapshot(snapshot);
+  if (!routines.length) return snapshot?.syncedAt || "";
+  return [
+    snapshot?.syncedAt,
+    ...routines.map((routine) => [routine.day, routine.focus, routine.minutes, routine.trainingLoad].filter(Boolean).join(":")),
+  ].filter(Boolean).join("|");
 }
 
 function routineProgressId(routine) {
   if (!routine) return "no-routine";
   const blocks = (routine.blocks || []).map((block) => `${block.name}:${block.dose}`).join(",");
-  return [routine.day, routine.focus, routine.minutes, blocks].filter(Boolean).join("|");
+  return [routine.date || today(), routine.day, routine.focus, routine.minutes, blocks].filter(Boolean).join("|");
 }
 
 function playerProgressKey(inviteCode, routineId) {
@@ -94,6 +116,7 @@ export default function AthletePortal({ inviteCode }) {
   const [snapshot, setSnapshot] = useState(null);
   const [notificationPermission, setNotificationPermission] = useState(notificationSupport);
   const [progress, setProgress] = useState({ started: false, completed: false, checked: [] });
+  const [selectedDay, setSelectedDay] = useState(currentDayName);
   const lastRoutineKey = useRef("");
 
   useEffect(() => {
@@ -114,7 +137,7 @@ export default function AthletePortal({ inviteCode }) {
 
         if (notify && previousKey && nextKey && nextKey !== previousKey) {
           setMessage("Coach updated your workout.");
-          showRoutineNotification(data.activeRoutine);
+          showRoutineNotification(routineForDay(data));
         }
         lastRoutineKey.current = nextKey;
       } catch (error) {
@@ -134,7 +157,14 @@ export default function AthletePortal({ inviteCode }) {
   }, [inviteCode, setup.isConfigured]);
 
   const sessions = snapshot?.sessions || [];
-  const activeRoutine = snapshot?.activeRoutine;
+  const dailyRoutines = useMemo(() => routineListFromSnapshot(snapshot), [snapshot]);
+  const displayRoutines = useMemo(
+    () => [...dailyRoutines].sort((a, b) => dayOffsetFromToday(a.day) - dayOffsetFromToday(b.day)),
+    [dailyRoutines]
+  );
+  const todaysRoutine = useMemo(() => routineForDay(snapshot), [snapshot]);
+  const activeRoutine = dailyRoutines.find((routine) => routine.day === selectedDay) || todaysRoutine;
+  const selectedIsToday = activeRoutine?.day === currentDayName();
   const routineId = useMemo(() => routineProgressId(activeRoutine), [activeRoutine]);
   const progressKey = useMemo(() => playerProgressKey(inviteCode, routineId), [inviteCode, routineId]);
   const todaysSessions = useMemo(() => sessions.filter((event) => event.date === today()), [sessions]);
@@ -142,6 +172,14 @@ export default function AthletePortal({ inviteCode }) {
   const blocks = activeRoutine?.blocks || [];
   const checkedCount = progress.checked.length;
   const progressPercent = blocks.length ? Math.round((checkedCount / blocks.length) * 100) : 0;
+
+  useEffect(() => {
+    if (!dailyRoutines.length) return;
+    setSelectedDay((current) => {
+      if (dailyRoutines.some((routine) => routine.day === current)) return current;
+      return todaysRoutine?.day || dailyRoutines[0].day;
+    });
+  }, [dailyRoutines, todaysRoutine?.day]);
 
   useEffect(() => {
     setProgress(loadProgress(progressKey));
@@ -225,12 +263,32 @@ export default function AthletePortal({ inviteCode }) {
 
         {status === "ready" && (
           <>
+            {displayRoutines.length > 1 && (
+              <section className="player-day-picker" aria-label="Daily workouts">
+                {displayRoutines.map((routine) => {
+                  const isSelected = routine.day === activeRoutine?.day;
+                  const isToday = routine.day === currentDayName();
+                  return (
+                    <button
+                      className={`player-day ${isSelected ? "active" : ""}`}
+                      type="button"
+                      key={routine.id || routine.day}
+                      onClick={() => setSelectedDay(routine.day)}
+                    >
+                      <strong>{isToday ? "Today" : routine.day.slice(0, 3)}</strong>
+                      <span>{routine.focus}</span>
+                    </button>
+                  );
+                })}
+              </section>
+            )}
+
             <section className="player-card today-card">
-              <div className="player-eyebrow">Today</div>
+              <div className="player-eyebrow">{selectedIsToday ? "Today" : activeRoutine?.day || "Workout plan"}</div>
               {!activeRoutine ? (
                 <PlayerEmpty
-                  title="No workout yet"
-                  text="Your coach has not sent today's routine."
+                  title="No daily workout yet"
+                  text="Ask your coach to sync the daily workout plan."
                 />
               ) : (
                 <>
@@ -318,8 +376,8 @@ export default function AthletePortal({ inviteCode }) {
             <section className="player-card player-setup-card">
               <div>
                 <div className="player-eyebrow">Updates</div>
-                <h2>Coach changes show here</h2>
-                <p>Synced {formatSyncTime(snapshot?.syncedAt)}. Leave alerts on so you know when the workout changes.</p>
+                <h2>Daily plan syncs here</h2>
+                <p>Synced {formatSyncTime(snapshot?.syncedAt)}. Leave alerts on so you know when a daily workout changes.</p>
               </div>
               <button className="player-secondary" type="button" onClick={requestNotifications}>
                 {notificationPermission === "granted" ? "Alerts On" : notificationPermission === "denied" ? "Alerts Blocked" : "Turn On Alerts"}

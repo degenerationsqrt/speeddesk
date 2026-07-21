@@ -14,7 +14,7 @@ function defaultTeam() {
   };
 }
 
-export function useTeamSync({ athletes, programs, calendarEvents, activeRoutine, onFlash }) {
+export function useTeamSync({ athletes, programs, calendarEvents, activeRoutine, dailyRoutines, onFlash }) {
   const [team, setTeam] = useState(defaultTeam);
   const [loaded, setLoaded] = useState(false);
   const [status, setStatus] = useState("idle");
@@ -39,8 +39,8 @@ export function useTeamSync({ athletes, programs, calendarEvents, activeRoutine,
   const inviteUrl = useMemo(() => buildInviteUrl(team.inviteCode), [team.inviteCode]);
 
   const snapshot = useMemo(
-    () => buildTeamSnapshot({ team, athletes, programs, calendarEvents, activeRoutine }),
-    [team, athletes, programs, calendarEvents, activeRoutine]
+    () => buildTeamSnapshot({ team, athletes, programs, calendarEvents, activeRoutine, dailyRoutines }),
+    [team, athletes, programs, calendarEvents, activeRoutine, dailyRoutines]
   );
 
   const updateTeam = (patch) => {
@@ -61,13 +61,13 @@ export function useTeamSync({ athletes, programs, calendarEvents, activeRoutine,
     }
 
     setStatus("syncing");
-    setMessage("Syncing roster, schedule, and selected routine...");
+    setMessage("Syncing roster, schedule, and daily workouts...");
 
     try {
       const synced = await upsertTeamSnapshot(snapshot);
       setTeam((current) => ({ ...current, lastSyncedAt: synced.syncedAt }));
       setStatus("synced");
-      setMessage("Team workspace synced. Athlete apps will update on refresh or polling.");
+      setMessage("Daily workout plan synced. Player apps will update on refresh or polling.");
       onFlash?.("Team synced");
       return true;
     } catch (error) {
