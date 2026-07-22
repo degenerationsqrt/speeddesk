@@ -74,8 +74,9 @@ export async function fetchTeamSnapshotByInvite(inviteCode) {
     .from("team_snapshots")
     .select("payload")
     .eq("invite_code", inviteCode)
-    .single();
+    .maybeSingle();
 
   if (error) throw error;
-  return data?.payload;
+  if (!data?.payload) throw new Error("No team was found for this invite code.");
+  return data.payload;
 }

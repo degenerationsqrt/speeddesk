@@ -169,7 +169,7 @@ export default function AthletePortal({ inviteCode }) {
       } catch (error) {
         if (cancelled) return;
         setStatus("error");
-        setMessage(error.message || "This invite link could not load.");
+        setMessage("");
       }
     }
 
