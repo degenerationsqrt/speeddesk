@@ -6,8 +6,18 @@ const POLL_MS = 20000;
 const PROGRESS_KEY_PREFIX = "speeddesk:player-progress";
 const DAY_ORDER = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
-const today = () => new Date().toISOString().slice(0, 10);
+function localDateString(date = new Date()) {
+  const localTime = date.getTime() - date.getTimezoneOffset() * 60000;
+  return new Date(localTime).toISOString().slice(0, 10);
+}
+
+const today = () => localDateString();
 const currentDayName = () => new Date().toLocaleDateString("en-US", { weekday: "long" });
+
+function normalizedDayName(dayName) {
+  const value = String(dayName || "").trim().toLowerCase();
+  return DAY_ORDER.find((day) => day.toLowerCase() === value) || "";
+}
 
 function notificationSupport() {
   if (typeof window === "undefined" || !("Notification" in window)) return "unsupported";
@@ -15,17 +25,29 @@ function notificationSupport() {
 }
 
 function routineListFromSnapshot(snapshot) {
-  if (Array.isArray(snapshot?.dailyRoutines) && snapshot.dailyRoutines.length) return snapshot.dailyRoutines;
-  return snapshot?.activeRoutine ? [snapshot.activeRoutine] : [];
+  const routines = Array.isArray(snapshot?.dailyRoutines) && snapshot.dailyRoutines.length
+    ? snapshot.dailyRoutines
+    : snapshot?.activeRoutine ? [snapshot.activeRoutine] : [];
+
+  return routines
+    .filter((routine) => routine && typeof routine === "object")
+    .map((routine, index) => ({
+      ...routine,
+      id: routine.id || `routine-${normalizedDayName(routine.day) || index}`,
+      day: normalizedDayName(routine.day) || routine.day || `Day ${index + 1}`,
+      focus: routine.focus || routine.sessionType || "Workout",
+      blocks: Array.isArray(routine.blocks) ? routine.blocks : [],
+    }));
 }
 
 function routineForDay(snapshot, dayName = currentDayName()) {
   const routines = routineListFromSnapshot(snapshot);
-  return routines.find((routine) => routine.day === dayName) || snapshot?.activeRoutine || routines[0] || null;
+  const targetDay = normalizedDayName(dayName);
+  return routines.find((routine) => normalizedDayName(routine.day) === targetDay) || routines[0] || null;
 }
 
 function dayOffsetFromToday(dayName) {
-  const targetIndex = DAY_ORDER.indexOf(dayName);
+  const targetIndex = DAY_ORDER.indexOf(normalizedDayName(dayName));
   if (targetIndex < 0) return 99;
   const todayIndex = new Date().getDay();
   return (targetIndex - todayIndex + 7) % 7;
@@ -42,7 +64,7 @@ function routineKey(snapshot) {
 
 function routineProgressId(routine) {
   if (!routine) return "no-routine";
-  const blocks = (routine.blocks || []).map((block) => `${block.name}:${block.dose}`).join(",");
+  const blocks = (Array.isArray(routine.blocks) ? routine.blocks : []).map((block) => `${block.name}:${block.dose}`).join(",");
   return [routine.date || today(), routine.day, routine.focus, routine.minutes, blocks].filter(Boolean).join("|");
 }
 
@@ -52,12 +74,16 @@ function playerProgressKey(inviteCode, routineId) {
 
 function formatSyncTime(value) {
   if (!value) return "Waiting for coach";
-  return new Date(value).toLocaleString([], { weekday: "short", hour: "numeric", minute: "2-digit" });
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "Recently";
+  return date.toLocaleString([], { weekday: "short", hour: "numeric", minute: "2-digit" });
 }
 
 function formatSessionDate(value) {
   if (!value) return "Soon";
-  return new Date(`${value}T12:00:00`).toLocaleDateString([], { weekday: "short", month: "short", day: "numeric" });
+  const date = new Date(`${value}T12:00:00`);
+  if (Number.isNaN(date.getTime())) return "Soon";
+  return date.toLocaleDateString([], { weekday: "short", month: "short", day: "numeric" });
 }
 
 function loadProgress(key) {
@@ -85,7 +111,7 @@ async function showRoutineNotification(routine) {
   if (notificationSupport() !== "granted" || !routine) return;
 
   const title = "New workout from coach";
-  const body = `${routine.day}: ${routine.focus}`;
+  const body = `${routine.day || "Today"}: ${routine.focus || "Workout"}`;
   const icon = new URL("./icons/icon-192.png", window.location.href).toString();
   const options = {
     body,
@@ -163,8 +189,8 @@ export default function AthletePortal({ inviteCode }) {
     [dailyRoutines]
   );
   const todaysRoutine = useMemo(() => routineForDay(snapshot), [snapshot]);
-  const activeRoutine = dailyRoutines.find((routine) => routine.day === selectedDay) || todaysRoutine;
-  const selectedIsToday = activeRoutine?.day === currentDayName();
+  const activeRoutine = dailyRoutines.find((routine) => normalizedDayName(routine.day) === normalizedDayName(selectedDay)) || todaysRoutine;
+  const selectedIsToday = normalizedDayName(activeRoutine?.day) === currentDayName();
   const routineId = useMemo(() => routineProgressId(activeRoutine), [activeRoutine]);
   const progressKey = useMemo(() => playerProgressKey(inviteCode, routineId), [inviteCode, routineId]);
   const todaysSessions = useMemo(() => sessions.filter((event) => event.date === today()), [sessions]);
@@ -176,7 +202,7 @@ export default function AthletePortal({ inviteCode }) {
   useEffect(() => {
     if (!dailyRoutines.length) return;
     setSelectedDay((current) => {
-      if (dailyRoutines.some((routine) => routine.day === current)) return current;
+      if (dailyRoutines.some((routine) => normalizedDayName(routine.day) === normalizedDayName(current))) return normalizedDayName(current) || current;
       return todaysRoutine?.day || dailyRoutines[0].day;
     });
   }, [dailyRoutines, todaysRoutine?.day]);
@@ -266,8 +292,8 @@ export default function AthletePortal({ inviteCode }) {
             {displayRoutines.length > 1 && (
               <section className="player-day-picker" aria-label="Daily workouts">
                 {displayRoutines.map((routine) => {
-                  const isSelected = routine.day === activeRoutine?.day;
-                  const isToday = routine.day === currentDayName();
+                  const isSelected = normalizedDayName(routine.day) === normalizedDayName(activeRoutine?.day);
+                  const isToday = normalizedDayName(routine.day) === currentDayName();
                   return (
                     <button
                       className={`player-day ${isSelected ? "active" : ""}`}
@@ -298,7 +324,7 @@ export default function AthletePortal({ inviteCode }) {
                       <p>{activeRoutine.intent || "Follow the steps below and check them off as you go."}</p>
                     </div>
                     <div className="time-badge">
-                      <strong>{activeRoutine.minutes || "--"}</strong>
+                      <strong>{activeRoutine.minutes ?? "--"}</strong>
                       <span>min</span>
                     </div>
                   </div>
