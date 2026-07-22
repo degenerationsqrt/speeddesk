@@ -1,3 +1,59 @@
+import cffDevelopmentProtocols from "./cffDevelopmentProtocols.json";
+
+export const CFF_DEVELOPMENT_PROTOCOLS = cffDevelopmentProtocols;
+export const CFF_WORKOUT_PROMPT_ANCHOR =
+  "Build a workout utilizing only the progression constraints and rules extracted from the CFF Development Curriculum found in the system data.";
+
+const protocolSlug = (value) =>
+  value
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+
+const protocolDuration = (routineName) => {
+  if (routineName.includes("U16-U19")) return 50;
+  if (routineName.includes("U12-U15")) return 45;
+  if (routineName.includes("U8-U11")) return 35;
+  if (routineName.includes("Recovery")) return 25;
+  if (routineName.includes("Audit")) return 25;
+  return 35;
+};
+
+const protocolFocus = (goal) => {
+  if (/speed|acceleration/i.test(goal)) return "Acceleration";
+  if (/recovery|mobility|readiness/i.test(goal)) return "Mobility";
+  if (/defensive|agility/i.test(goal)) return "Agility";
+  return "Ball Mastery";
+};
+
+const CFF_PROTOCOL_DRILLS = cffDevelopmentProtocols.flatMap((routine) =>
+  routine.exercises.map((exercise) => ({
+    id: `cff-${protocolSlug(routine.routine_name)}-${protocolSlug(exercise.name)}`,
+    name: exercise.name,
+    category: protocolFocus(routine.target_goal),
+    level: routine.routine_name,
+    dose: `${exercise.sets} sets: ${exercise.reps_or_duration}`,
+    equipment: "Ball, cones, wall, or open field as needed",
+    metric: "score",
+    source: routine.source_chapter,
+    cues: [exercise.intensity_cue, exercise.form_cue, routine.progression_rule],
+  })),
+);
+
+const CFF_PROTOCOL_PROGRAMS = cffDevelopmentProtocols.map((routine) => ({
+  id: `prog-cff-${protocolSlug(routine.routine_name)}`,
+  name: routine.routine_name,
+  focus: protocolFocus(routine.target_goal),
+  duration: protocolDuration(routine.routine_name),
+  intensity: /recovery/i.test(routine.target_goal) ? "Low" : /competitive|speed|defensive/i.test(routine.target_goal) ? "High" : "Medium",
+  parentMode: /parent/i.test(routine.routine_name) ? "Dad" : "Mixed",
+  source: routine.source_chapter,
+  notes: routine.progression_rule,
+  drills: routine.exercises.map(
+    (exercise) => `cff-${protocolSlug(routine.routine_name)}-${protocolSlug(exercise.name)}`,
+  ),
+}));
+
 export const TOTAL_FUTBALL_WORKOUT_SOURCE = {
   fileName: "Total Futball Workout.xlsx",
   downloadPath: "/workbooks/Total-Futball-Workout.xlsx",
@@ -235,6 +291,7 @@ export const TOTAL_FUTBALL_WORKOUT_DRILLS = [
     source: TOTAL_FUTBALL_WORKOUT_SOURCE.fileName,
     cues: ["First touch has a purpose", "One clean action at a time", "Give players control inside the standard"],
   },
+  ...CFF_PROTOCOL_DRILLS,
 ];
 
 export const TOTAL_FUTBALL_WORKOUT_PROGRAMS = [
@@ -306,6 +363,7 @@ export const TOTAL_FUTBALL_WORKOUT_PROGRAMS = [
       "tfw-first-touch-finish",
     ],
   },
+  ...CFF_PROTOCOL_PROGRAMS,
 ];
 
 export const TOTAL_FUTBALL_WORKOUT_WEEKLY_PLAN = [
