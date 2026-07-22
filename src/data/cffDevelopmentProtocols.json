@@ -1,0 +1,468 @@
+[
+  {
+    "routine_name": "Dynamic Ball Foundation",
+    "target_goal": "Technical Skill Acquisition and Coordination",
+    "source_chapter": "02 Development Program Foundation; 03 Four Main Areas of Soccer Development; 07 Training Methodology",
+    "progression_rule": "Keep the work blocked and predictable until at least 80% of repetitions are clean in two sessions. Then progress from static to moving, variable, random, and time-limited execution without sacrificing technique.",
+    "exercises": [
+      {
+        "name": "Dynamic Movement Preparation",
+        "sets": 2,
+        "reps_or_duration": "4 minutes with 30 seconds rest",
+        "intensity_cue": "Easy to moderate pacing",
+        "form_cue": "Stay tall through the trunk and control each landing before changing direction."
+      },
+      {
+        "name": "Two-Foot Ball Manipulation",
+        "sets": 4,
+        "reps_or_duration": "60 seconds with 30 seconds rest",
+        "intensity_cue": "Controlled speed with no more than two errors per set",
+        "form_cue": "Use both feet and keep the ball within one step of the body."
+      },
+      {
+        "name": "Blocked Wall Passing",
+        "sets": 4,
+        "reps_or_duration": "25 passes per foot with 45 seconds rest",
+        "intensity_cue": "Firm ground passes at 70% effort",
+        "form_cue": "Plant beside the ball and point the standing foot toward the target."
+      },
+      {
+        "name": "First-Touch Gate Receiving",
+        "sets": 4,
+        "reps_or_duration": "8 receptions each side with 45 seconds rest",
+        "intensity_cue": "One controlled first touch through the gate",
+        "form_cue": "Open the hips before contact and guide the ball into playable space."
+      },
+      {
+        "name": "Ball Coordination Challenge",
+        "sets": 3,
+        "reps_or_duration": "60 seconds with 30 seconds rest",
+        "intensity_cue": "Smooth continuous contacts",
+        "form_cue": "Keep the ankles active and make small adjustments under the center of mass."
+      }
+    ]
+  },
+  {
+    "routine_name": "Scan Receive Play Circuit",
+    "target_goal": "Perception, First Touch, and Passing Accuracy",
+    "source_chapter": "04 Te-Ta Success Indicators; 05 Principles & Demands",
+    "progression_rule": "Begin with a known target and unlimited touches. After two sessions at 80% passing accuracy, add random visual calls, reduce space, and progress from two-touch to one-touch play.",
+    "exercises": [
+      {
+        "name": "Pre-Reception Shoulder Check",
+        "sets": 4,
+        "reps_or_duration": "12 receptions with 45 seconds rest",
+        "intensity_cue": "Complete two shoulder checks during the 3 seconds before each reception",
+        "form_cue": "Move the eyes and head early, then return the eyes to the ball before contact."
+      },
+      {
+        "name": "Open-Body Back-Foot Receive",
+        "sets": 4,
+        "reps_or_duration": "10 receptions each side with 45 seconds rest",
+        "intensity_cue": "80% accurate first touches into the next action",
+        "form_cue": "Show the chest toward attacking depth and receive across the body with the back foot."
+      },
+      {
+        "name": "One-Two Touch Wall Passing",
+        "sets": 5,
+        "reps_or_duration": "60 seconds with 30 seconds rest",
+        "intensity_cue": "Firm ground pass with one or two touches",
+        "form_cue": "Pass with the foot farther from imagined pressure and keep the first touch out of the feet."
+      },
+      {
+        "name": "Random Color First Touch",
+        "sets": 4,
+        "reps_or_duration": "90 seconds with 45 seconds rest",
+        "intensity_cue": "React to a parent, partner, or audio color call",
+        "form_cue": "Scan before the ball arrives and take the first touch toward the called gate."
+      }
+    ]
+  },
+  {
+    "routine_name": "Create Space and Penetrate",
+    "target_goal": "Individual Attacking and Two-Footed 1v1 Ability",
+    "source_chapter": "03 Four Main Areas of Soccer Development; 05 Principles & Demands",
+    "progression_rule": "Progress from a cone defender to passive pressure and then live pressure. Increase speed or reduce space only when the player can exit under control with both feet on at least 8 of 10 attempts.",
+    "exercises": [
+      {
+        "name": "Check-Away Check-To Movement",
+        "sets": 3,
+        "reps_or_duration": "8 repetitions each direction with 45 seconds rest",
+        "intensity_cue": "Sharp 3-step separation before receiving",
+        "form_cue": "Change direction with the hips low and arrive side-on to see the field."
+      },
+      {
+        "name": "Cone Defender Change of Rhythm",
+        "sets": 4,
+        "reps_or_duration": "6 attacks per foot with 60 seconds rest",
+        "intensity_cue": "Slow approach followed by an explosive exit",
+        "form_cue": "Attack the defender's front foot and push the exit touch beyond tackling range."
+      },
+      {
+        "name": "Two-Foot 1v1 Exit",
+        "sets": 4,
+        "reps_or_duration": "6 repetitions each side with 60 seconds rest",
+        "intensity_cue": "Game speed with a clean exit through the gate",
+        "form_cue": "Sell the feint with the shoulders and accelerate immediately after the touch."
+      },
+      {
+        "name": "Penetration and Finish",
+        "sets": 4,
+        "reps_or_duration": "8 finishes alternating feet with 60 seconds rest",
+        "intensity_cue": "Controlled first touch followed by a decisive strike",
+        "form_cue": "Move the defender first, then strike through the center of the ball with the head steady."
+      }
+    ]
+  },
+  {
+    "routine_name": "Reaction to Loss Reset",
+    "target_goal": "Defensive Transition, Deceleration, and Recovery Speed",
+    "source_chapter": "03 Four Main Areas of Soccer Development; 05 Principles & Demands",
+    "progression_rule": "Start from a planned turnover cue, then make the cue random. Add distance or an active ball carrier only while the player can close under control and maintain correct delay-and-direct positioning.",
+    "exercises": [
+      {
+        "name": "Turnover Reaction Sprint",
+        "sets": 6,
+        "reps_or_duration": "5 seconds with 45 seconds rest",
+        "intensity_cue": "Explosive first three steps",
+        "form_cue": "Turn from the hips, drive the arms, and attack the space immediately after the loss cue."
+      },
+      {
+        "name": "Close and Decelerate",
+        "sets": 4,
+        "reps_or_duration": "6 repetitions with 45 seconds rest",
+        "intensity_cue": "Fast approach, controlled final 2 meters",
+        "form_cue": "Shorten the steps on arrival and keep the chest over the knees."
+      },
+      {
+        "name": "Delay and Direct Shadow",
+        "sets": 4,
+        "reps_or_duration": "30 seconds with 45 seconds rest",
+        "intensity_cue": "Moderate movement with no crossed feet",
+        "form_cue": "Stay side-on and curve the approach to show play toward the chosen side."
+      },
+      {
+        "name": "Recovery Run to Goal Side",
+        "sets": 6,
+        "reps_or_duration": "10 meters with 60 seconds rest",
+        "intensity_cue": "90% sprint effort with full recovery",
+        "form_cue": "Recover inside the ball line before turning to face the next action."
+      }
+    ]
+  },
+  {
+    "routine_name": "U8-U13 Speed and Coordination Microdose",
+    "target_goal": "Acceleration, Agility, and Motor Coordination",
+    "source_chapter": "02 Development Program Foundation; 06 Ages & Stages; 09 Player Selection Criteria",
+    "progression_rule": "Keep repetitions short and provide full recovery so speed quality stays high. Add one repetition or a reaction cue only when times remain within 5% of the player's best effort; stop the speed block when quality falls outside that range.",
+    "exercises": [
+      {
+        "name": "Running and Skipping Mechanics",
+        "sets": 2,
+        "reps_or_duration": "20 meters per pattern with 30 seconds rest",
+        "intensity_cue": "Easy rhythm progressing to moderate speed",
+        "form_cue": "Keep the hips tall and place the foot beneath the body."
+      },
+      {
+        "name": "Reaction Acceleration",
+        "sets": 6,
+        "reps_or_duration": "5 meters with 60 seconds rest",
+        "intensity_cue": "95% effort from a random visual or sound cue",
+        "form_cue": "Lean from the ankles and push the ground behind the body."
+      },
+      {
+        "name": "Ten-Meter Sprint",
+        "sets": 6,
+        "reps_or_duration": "10 meters with 90 seconds rest",
+        "intensity_cue": "Maximum quality with no conditioning fatigue",
+        "form_cue": "Drive through the first five steps before rising gradually."
+      },
+      {
+        "name": "Reactive Change of Direction",
+        "sets": 4,
+        "reps_or_duration": "2 repetitions each direction with 60 seconds rest",
+        "intensity_cue": "Fast but balanced reaction to a color or direction call",
+        "form_cue": "Lower the center of mass before the cut and push away from the outside leg."
+      },
+      {
+        "name": "Single-Leg Stick Landing",
+        "sets": 3,
+        "reps_or_duration": "6 repetitions per leg with 45 seconds rest",
+        "intensity_cue": "Hold every landing for 2 seconds",
+        "form_cue": "Keep the knee aligned over the middle toes and the pelvis level."
+      }
+    ]
+  },
+  {
+    "routine_name": "U8-U11 Individual Technical Session",
+    "target_goal": "Ball Mastery, Fun, and Early Decision-Making",
+    "source_chapter": "06 Ages & Stages; 07 Training Methodology",
+    "progression_rule": "Keep each activity brief and change tasks before concentration drops. Move from isolated skill to an eased decision task and then a scored challenge; progress through success and enjoyment rather than fatigue.",
+    "exercises": [
+      {
+        "name": "Ball-Based Warm-Up",
+        "sets": 2,
+        "reps_or_duration": "4 minutes with 30 seconds rest",
+        "intensity_cue": "Easy playful pacing",
+        "form_cue": "Use many small touches while keeping the head up between contacts."
+      },
+      {
+        "name": "Two-Foot Ball Mastery",
+        "sets": 3,
+        "reps_or_duration": "3 minutes with 60 seconds rest",
+        "intensity_cue": "Controlled repetitions with both feet",
+        "form_cue": "Keep the knees soft and move around the ball instead of reaching."
+      },
+      {
+        "name": "Wall Pass and Receive",
+        "sets": 3,
+        "reps_or_duration": "3 minutes with 60 seconds rest",
+        "intensity_cue": "Accurate ground passes before adding speed",
+        "form_cue": "Receive away from the body and prepare the next pass with the first touch."
+      },
+      {
+        "name": "Called-Gate Dribble",
+        "sets": 4,
+        "reps_or_duration": "60 seconds with 45 seconds rest",
+        "intensity_cue": "React to a parent or audio cue",
+        "form_cue": "Look up before choosing the gate and accelerate after changing direction."
+      },
+      {
+        "name": "Personal Best Finishing Game",
+        "sets": 3,
+        "reps_or_duration": "8 shots with 60 seconds rest",
+        "intensity_cue": "Score accuracy before power",
+        "form_cue": "Place the non-kicking foot beside the ball and finish balanced."
+      }
+    ]
+  },
+  {
+    "routine_name": "U12-U15 Individual Development Session",
+    "target_goal": "Technique Under Eased Pressure and Injury-Resistant Movement",
+    "source_chapter": "06 Ages & Stages; 07 Training Methodology; 08 Periodization of Te-Ta",
+    "progression_rule": "Use the sequence warm-up, coordination, isolated technique, eased decision-making, and competitive challenge. Reduce touches or space only after clean movement and at least 80% technical success; do not use high-lactate conditioning as the progression.",
+    "exercises": [
+      {
+        "name": "Dynamic Mobility and Landing Prep",
+        "sets": 2,
+        "reps_or_duration": "5 minutes with 30 seconds rest",
+        "intensity_cue": "Easy to moderate pacing",
+        "form_cue": "Control trunk position and align the hip, knee, and foot on every landing."
+      },
+      {
+        "name": "Coordination With Ball",
+        "sets": 3,
+        "reps_or_duration": "3 minutes with 60 seconds rest",
+        "intensity_cue": "Continuous quality touches",
+        "form_cue": "Alternate feet and maintain balance while changing movement patterns."
+      },
+      {
+        "name": "Isolated Passing Pattern",
+        "sets": 4,
+        "reps_or_duration": "3 minutes with 60 seconds rest",
+        "intensity_cue": "80% accurate firm passes",
+        "form_cue": "Scan, open the body, and play the next pass from the first touch."
+      },
+      {
+        "name": "Eased Random-Call Receiving",
+        "sets": 4,
+        "reps_or_duration": "2 minutes with 60 seconds rest",
+        "intensity_cue": "Two-touch limit with random direction calls",
+        "form_cue": "Recognize the cue before contact and receive away from pressure."
+      },
+      {
+        "name": "Competitive Accuracy Challenge",
+        "sets": 4,
+        "reps_or_duration": "90 seconds with 60 seconds rest",
+        "intensity_cue": "Score one point for each clean action under the time limit",
+        "form_cue": "Keep technique stable while decision speed increases."
+      },
+      {
+        "name": "Cooldown Mobility",
+        "sets": 1,
+        "reps_or_duration": "5 minutes",
+        "intensity_cue": "Very easy pacing",
+        "form_cue": "Breathe slowly and move only through comfortable ranges."
+      }
+    ]
+  },
+  {
+    "routine_name": "U16-U19 Competitive Individual Session",
+    "target_goal": "Game-Speed Technique, Strength, and Situational Decision-Making",
+    "source_chapter": "06 Ages & Stages; 07 Training Methodology; 08 Periodization of Te-Ta",
+    "progression_rule": "Progress from dynamic isolated repetitions to random, time-and-space-limited work and finally active pressure. Increase complexity before volume and retain full recovery for maximal-speed actions.",
+    "exercises": [
+      {
+        "name": "Dynamic Warm-Up and SAQ",
+        "sets": 3,
+        "reps_or_duration": "4 minutes with 45 seconds rest",
+        "intensity_cue": "Build from 60% to 85% effort",
+        "form_cue": "Maintain strong posture and finish every direction change under control."
+      },
+      {
+        "name": "One-Touch Passing Speed",
+        "sets": 5,
+        "reps_or_duration": "60 seconds with 45 seconds rest",
+        "intensity_cue": "Fast ball speed with at least 85% accuracy",
+        "form_cue": "Prepare the hips before the ball arrives and meet the middle of the ball."
+      },
+      {
+        "name": "Random First-Touch Escape",
+        "sets": 4,
+        "reps_or_duration": "2 minutes with 60 seconds rest",
+        "intensity_cue": "React to unpredictable pressure or direction cues",
+        "form_cue": "Scan early and take the first touch beyond the pressure line."
+      },
+      {
+        "name": "Live 1v1 or Shadow Pressure",
+        "sets": 6,
+        "reps_or_duration": "20 seconds with 70 seconds rest",
+        "intensity_cue": "Game speed with complete recovery",
+        "form_cue": "Change rhythm after fixing the defender and protect the ball through contact."
+      },
+      {
+        "name": "Sprint to Finish",
+        "sets": 6,
+        "reps_or_duration": "10-meter sprint plus 1 shot with 75 seconds rest",
+        "intensity_cue": "90-95% sprint effort and match-quality finish",
+        "form_cue": "Regain balance with a preparation step before striking."
+      },
+      {
+        "name": "Cooldown and Session Review",
+        "sets": 1,
+        "reps_or_duration": "5 minutes",
+        "intensity_cue": "Very easy movement followed by a 1-10 session RPE",
+        "form_cue": "Lower breathing rate, then record one successful action and one next focus."
+      }
+    ]
+  },
+  {
+    "routine_name": "Parent-Guided Decision Session",
+    "target_goal": "Parent-Assisted Technique and Guided Discovery",
+    "source_chapter": "03 Four Main Areas of Soccer Development; 06 Ages & Stages; 07 Training Methodology",
+    "progression_rule": "The parent begins as a server and cue giver, then adds passive and finally active pressure. Ask the player to explain the decision after each set; add difficulty only when the player identifies the cue and executes the chosen action consistently.",
+    "exercises": [
+      {
+        "name": "Parent Serve and Open Receive",
+        "sets": 4,
+        "reps_or_duration": "10 serves each side with 45 seconds rest",
+        "intensity_cue": "Accurate service with unlimited touches first",
+        "form_cue": "The player checks both shoulders and opens the body before the serve arrives."
+      },
+      {
+        "name": "Color Call First Touch",
+        "sets": 4,
+        "reps_or_duration": "8 calls each side with 45 seconds rest",
+        "intensity_cue": "Random call after the ball starts moving",
+        "form_cue": "The first touch must enter the called gate without crossing the feet."
+      },
+      {
+        "name": "Passive Defender Escape",
+        "sets": 4,
+        "reps_or_duration": "6 repetitions each foot with 60 seconds rest",
+        "intensity_cue": "Parent applies 40-50% pressure",
+        "form_cue": "Place the body between defender and ball, then exit into open space."
+      },
+      {
+        "name": "Live Choice Challenge",
+        "sets": 5,
+        "reps_or_duration": "30 seconds with 60 seconds rest",
+        "intensity_cue": "Parent varies the pressure side at game speed",
+        "form_cue": "The player scans, names the open option, and commits to the decision."
+      },
+      {
+        "name": "Player Self-Evaluation",
+        "sets": 1,
+        "reps_or_duration": "3 minutes",
+        "intensity_cue": "Rate execution and effort from 1-10",
+        "form_cue": "State one observed cue, one good decision, and one action to improve next time."
+      }
+    ]
+  },
+  {
+    "routine_name": "Active Recovery and Supercompensation Reset",
+    "target_goal": "Active Recovery, Mobility, and Readiness",
+    "source_chapter": "02 Development Program Foundation; 06 Ages & Stages; 07 Training Methodology",
+    "progression_rule": "Use this routine after a high-load day or when readiness is low. Return to normal training only when movement is pain-free and the player's next-day readiness improves; recovery work should not become another hard session.",
+    "exercises": [
+      {
+        "name": "Easy Ball Walk and Dribble",
+        "sets": 2,
+        "reps_or_duration": "5 minutes with 60 seconds rest",
+        "intensity_cue": "RPE 2-3 out of 10",
+        "form_cue": "Keep the shoulders relaxed and use soft touches with both feet."
+      },
+      {
+        "name": "Dynamic Mobility Flow",
+        "sets": 2,
+        "reps_or_duration": "5 minutes with 30 seconds rest",
+        "intensity_cue": "Comfortable range with no forced stretch",
+        "form_cue": "Move slowly through the hips, ankles, and thoracic spine without bouncing."
+      },
+      {
+        "name": "Low-Intensity Coordination",
+        "sets": 3,
+        "reps_or_duration": "60 seconds with 30 seconds rest",
+        "intensity_cue": "RPE 3 out of 10",
+        "form_cue": "Prioritize smooth rhythm and balance over speed."
+      },
+      {
+        "name": "Breathing Reset",
+        "sets": 1,
+        "reps_or_duration": "5 minutes",
+        "intensity_cue": "Slow nasal breathing",
+        "form_cue": "Use a longer exhale while keeping the ribs stacked over the pelvis."
+      },
+      {
+        "name": "Readiness Check",
+        "sets": 1,
+        "reps_or_duration": "Record sleep, soreness, energy, and motivation from 1-5",
+        "intensity_cue": "Honest self-report before the next training day",
+        "form_cue": "Report pain separately from normal muscle soreness."
+      }
+    ]
+  },
+  {
+    "routine_name": "Coach Workload and Progress Audit",
+    "target_goal": "Workload Monitoring and Individual Progression",
+    "source_chapter": "02 Development Program Foundation; 08 Periodization of Te-Ta; 09 Player Selection Criteria",
+    "progression_rule": "Record completed volume, session minutes, and session RPE after every workout, then calculate session load as minutes multiplied by RPE. Increase the next week's total load by no more than 10% when completion, readiness, and movement quality remain stable; otherwise hold or reduce the load.",
+    "exercises": [
+      {
+        "name": "Ten-Meter Speed Check",
+        "sets": 3,
+        "reps_or_duration": "10 meters with 2 minutes rest",
+        "intensity_cue": "Maximum quality after a full warm-up",
+        "form_cue": "Use the same start position and surface for every test."
+      },
+      {
+        "name": "Reactive Agility Check",
+        "sets": 4,
+        "reps_or_duration": "1 reaction each direction with 90 seconds rest",
+        "intensity_cue": "Maximum controlled speed",
+        "form_cue": "Record only trials completed without slipping or losing balance."
+      },
+      {
+        "name": "Two-Foot Passing Accuracy Check",
+        "sets": 2,
+        "reps_or_duration": "20 passes per foot with 60 seconds rest",
+        "intensity_cue": "Firm pass to a fixed target",
+        "form_cue": "Use the same distance and target size at every audit."
+      },
+      {
+        "name": "Session Load Log",
+        "sets": 1,
+        "reps_or_duration": "Record completed minutes and RPE 1-10 after each workout",
+        "intensity_cue": "Session load equals minutes multiplied by RPE",
+        "form_cue": "Log the actual completed work rather than the scheduled work."
+      },
+      {
+        "name": "Weekly Completion Review",
+        "sets": 1,
+        "reps_or_duration": "Review completed sets, missed sessions, soreness, and comments once per week",
+        "intensity_cue": "Coach reviews before sending the next schedule",
+        "form_cue": "Change one training variable at a time so the response can be evaluated."
+      }
+    ]
+  }
+]
