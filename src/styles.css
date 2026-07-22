@@ -1340,4 +1340,14 @@ textarea {
     height: 34px;
     width: 54px;
   }
+  .coach-note strong {
+  color: #f6c453;
+  text-transform: uppercase;
+}
+
+.coach-note em {
+  color: #9fb0a6;
+  font-style: normal;
+  font-weight: 700;
+}
 }
