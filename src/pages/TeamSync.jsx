@@ -9,8 +9,8 @@ function formatSyncTime(value) {
   return new Date(value).toLocaleString([], { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
 }
 
-export default function TeamSync({ athletes, programs, calendarEvents, onFlash }) {
-  const sync = useTeamSync({ athletes, programs, calendarEvents, onFlash });
+export default function TeamSync({ athletes, programs, calendarEvents, activeRoutine, dailyRoutines = [], onFlash }) {
+  const sync = useTeamSync({ athletes, programs, calendarEvents, activeRoutine, dailyRoutines, onFlash });
   const activeAthletes = athletes.filter((athlete) => athlete.status !== "Inactive");
   const upcomingSessions = calendarEvents.slice(0, 5);
   const connectionLabel = sync.setup.isConfigured ? "Cloud ready" : "Setup needed";
@@ -27,7 +27,7 @@ export default function TeamSync({ athletes, programs, calendarEvents, onFlash }
 
   return (
     <>
-      <Panel title="Team Sync" sub="Take Apex Predator Elite live outside GitHub and keep the roster on one shared schedule">
+      <Panel title="Team Sync" sub="Share one invite code so player apps get an individual workout every day">
         <div className="sync-status-row">
           <StatusPill tone={sync.setup.isConfigured ? "green" : "gold"} label={connectionLabel} />
           <span className="muted">Last sync: {formatSyncTime(sync.team.lastSyncedAt)}</span>
@@ -35,9 +35,29 @@ export default function TeamSync({ athletes, programs, calendarEvents, onFlash }
 
         <div className="metric-grid">
           <Metric label="Active athletes" value={activeAthletes.length} accent="green" />
-          <Metric label="Programs" value={programs.length} accent="orange" />
+          <Metric label="Daily workouts" value={dailyRoutines.length || 1} accent="orange" />
           <Metric label="Scheduled" value={calendarEvents.length} accent="gold" />
         </div>
+
+        {activeRoutine && (
+          <div className="sync-note">
+            <strong>Selected day preview:</strong> {activeRoutine.day} - {activeRoutine.focus} ({activeRoutine.minutes} min)
+          </div>
+        )}
+
+        {dailyRoutines.length > 1 && (
+          <div className="mini-program-list">
+            {dailyRoutines.map((routine) => (
+              <div className="mini-row" key={routine.id || routine.day}>
+                <span className="badge" style={{ "--badge-color": routine.intensity === "Rest" ? "#38bdf8" : "#a3e635" }}>
+                  {routine.day.slice(0, 3)}
+                </span>
+                <span>{routine.focus}</span>
+                <strong>{routine.minutes} min</strong>
+              </div>
+            ))}
+          </div>
+        )}
 
         <div className="form-grid">
           <Field label="Team name">
@@ -68,7 +88,7 @@ export default function TeamSync({ athletes, programs, calendarEvents, onFlash }
         )}
 
         <button className="save-btn" type="button" onClick={sync.syncNow}>
-          {sync.status === "syncing" ? "Syncing..." : "Sync roster and schedule"}
+          {sync.status === "syncing" ? "Syncing..." : "Sync Daily Plan"}
         </button>
       </Panel>
 

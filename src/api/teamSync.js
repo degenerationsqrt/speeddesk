@@ -22,7 +22,7 @@ export function buildInviteUrl(inviteCode) {
   return url.toString();
 }
 
-export function buildTeamSnapshot({ team, athletes, programs, calendarEvents }) {
+export function buildTeamSnapshot({ team, athletes, programs, calendarEvents, activeRoutine, dailyRoutines }) {
   return {
     team: {
       id: team.id,
@@ -33,8 +33,10 @@ export function buildTeamSnapshot({ team, athletes, programs, calendarEvents }) 
     athletes,
     programs,
     sessions: calendarEvents,
+    activeRoutine,
+    dailyRoutines: Array.isArray(dailyRoutines) ? dailyRoutines : activeRoutine ? [activeRoutine] : [],
     syncedAt: new Date().toISOString(),
-    version: 1,
+    version: 3,
   };
 }
 
@@ -72,8 +74,9 @@ export async function fetchTeamSnapshotByInvite(inviteCode) {
     .from("team_snapshots")
     .select("payload")
     .eq("invite_code", inviteCode)
-    .single();
+    .maybeSingle();
 
   if (error) throw error;
-  return data?.payload;
+  if (!data?.payload) throw new Error("No team was found for this invite code.");
+  return data.payload;
 }

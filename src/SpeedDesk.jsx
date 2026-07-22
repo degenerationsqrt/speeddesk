@@ -1,17 +1,16 @@
-import React, { useEffect, useMemo, useState } from "react";
-import AthletePortal from "./pages/AthletePortal.jsx";
-import TeamSync from "./pages/TeamSync.jsx";
+import React, { Suspense, lazy, useEffect, useMemo, useState } from "react";
 import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  Line,
-  LineChart,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
+  TOTAL_FUTBALL_WORKOUT_DRILLS,
+  TOTAL_FUTBALL_WORKOUT_PROGRAMS,
+  TOTAL_FUTBALL_WORKOUT_SCORE_TARGETS,
+  TOTAL_FUTBALL_WORKOUT_SOURCE,
+  TOTAL_FUTBALL_WORKOUT_WEEKLY_PLAN,
+} from "./data/totalFutballWorkout.js";
+
+const AthletePortal = lazy(() => import("./pages/AthletePortal.jsx"));
+const TeamSync = lazy(() => import("./pages/TeamSync.jsx"));
+const TrendLineChart = lazy(() => import("./components/TrendLineChart.jsx"));
+const TrendVolumeChart = lazy(() => import("./components/TrendVolumeChart.jsx"));
 
 const CATEGORIES = [
   "Acceleration",
@@ -35,6 +34,7 @@ const CATEGORY_COLORS = {
 
 const SOURCE_LABELS = {
   workbook: "Training Workbook.xlsx",
+  totalFutballWorkout: TOTAL_FUTBALL_WORKOUT_SOURCE.fileName,
   drills: "DRILLS.xlsx",
   closeControl: "Close_Control_Dribbling_Tracker.xlsx",
   advancedTouch: "Advanced_Technical_Touch_Tracker.xlsx",
@@ -778,97 +778,10 @@ const DRILLS = [
     source: SOURCE_LABELS.workbook,
     cues: ["Light contacts", "Stay relaxed", "Use as warm-up or recovery"],
   },
+  ...TOTAL_FUTBALL_WORKOUT_DRILLS,
 ];
 
-const WEEKLY_PLAN = [
-  {
-    day: "Monday",
-    focus: "Cardio + cone rhythm",
-    intent: "Build repeatable footwork and aerobic support without heavy CNS cost.",
-    meters: 0,
-    contacts: 80,
-    blocks: [
-      { name: "Easy cardio", dose: "30 min", category: "Recovery" },
-      { name: "X Drill", dose: "15 min", category: "Agility", drillId: "x-drill" },
-      { name: "V Drill", dose: "15 min", category: "Agility", drillId: "v-drill" },
-    ],
-  },
-  {
-    day: "Tuesday",
-    focus: "Hill, plyo, and sprint exposure",
-    intent: "Blend hill power with low-to-moderate plyometric contacts.",
-    meters: 180,
-    contacts: 120,
-    blocks: [
-      { name: "Hill work", dose: "25 min", category: "Recovery", drillId: "hill-repeats" },
-      { name: "Right-leg plyo jumps", dose: "controlled block", category: "Plyometrics" },
-      { name: "Left-leg plyo jumps", dose: "controlled block", category: "Plyometrics" },
-      { name: "Both-leg plyo jumps", dose: "controlled block", category: "Plyometrics" },
-      { name: "Sprint finish", dose: "short fast reps", category: "Acceleration" },
-    ],
-  },
-  {
-    day: "Wednesday",
-    focus: "Ball mastery + mobility",
-    intent: "Touch quality, ankles, hips, and low fatigue field feel.",
-    meters: 0,
-    contacts: 60,
-    blocks: [
-      { name: "Figure-8 dribbling", dose: "3 x 45 sec", category: "Ball Mastery", drillId: "figure-8" },
-      { name: "V Cut series", dose: "3x each foot", category: "Ball Mastery", drillId: "v-cut" },
-      { name: "Jump rope flow", dose: "5 to 8 min", category: "Recovery", drillId: "jump-rope-flow" },
-    ],
-  },
-  {
-    day: "Thursday",
-    focus: "Recovery or off",
-    intent: "Restore tissue quality before the high-speed Friday session.",
-    meters: 0,
-    contacts: 0,
-    blocks: [
-      { name: "Walk, bike, or mobility", dose: "20 to 30 min easy", category: "Recovery" },
-      { name: "Optional ball touches", dose: "10 min relaxed", category: "Ball Mastery" },
-    ],
-  },
-  {
-    day: "Friday",
-    focus: "Sprint mechanics + first-step explosion",
-    intent: "Highest quality acceleration day. Full rest, stop before sloppy reps.",
-    meters: 190,
-    contacts: 70,
-    blocks: [
-      { name: "A-Skips -> A-Runs -> Bounds", dose: "3 x 20 m progression", category: "Max Velocity", drillId: "a-skip" },
-      { name: "Falling Start to Sprint", dose: "4 x 10 m, 3 x 20 m", category: "Acceleration", drillId: "falling-start" },
-      { name: "Sprint Sled Pulls", dose: "5 x 10 m at 15-25% BW", category: "Acceleration", drillId: "sled-pull" },
-      { name: "Wall Drill Series", dose: "3 x 10 each leg", category: "Acceleration", drillId: "wall-drill" },
-      { name: "Ankling + dribble run ladder", dose: "4 sets into 20 m sprint", category: "Acceleration" },
-    ],
-  },
-  {
-    day: "Saturday",
-    focus: "Reactive agility or light play",
-    intent: "Apply movement skill with a reaction component, but keep total fatigue honest.",
-    meters: 120,
-    contacts: 60,
-    blocks: [
-      { name: "Mirror Drill", dose: "4 x 20 sec", category: "Agility", drillId: "mirror-drill" },
-      { name: "5-10-5 Shuttle", dose: "4 timed reps", category: "Agility", drillId: "five-ten-five" },
-      { name: "La Croqueta Series", dose: "3x each pattern", category: "Ball Mastery", drillId: "la-croqueta" },
-    ],
-  },
-  {
-    day: "Sunday",
-    focus: "Recovery + flow + sprint mechanics",
-    intent: "Tempo rhythm, touch flow, and easy mechanics cleanup.",
-    meters: 1200,
-    contacts: 60,
-    blocks: [
-      { name: "Jump Rope Flow", dose: "5 to 12 min", category: "Recovery", drillId: "jump-rope-flow" },
-      { name: "Tempo run option", dose: "2x400, 3x300, 4x200, or 6x100 at 70%", category: "Recovery", drillId: "tempo-ladder" },
-      { name: "A-Skip mechanics", dose: "2 x 20 m relaxed", category: "Max Velocity", drillId: "a-skip" },
-    ],
-  },
-];
+const WEEKLY_PLAN = TOTAL_FUTBALL_WORKOUT_WEEKLY_PLAN;
 
 const DEFAULT_ATHLETES = [
   { id: "ath-jayden", name: "Jayden", email: "", group: "Attackers", status: "Active", notes: "First-step and close-control focus" },
@@ -898,6 +811,7 @@ const DEFAULT_PROGRAMS = [
     notes: "Change of direction with a reaction component for small groups.",
     drills: ["mirror-drill", "short-lateral-shuttle", "five-ten-five", "skater-jumps"],
   },
+  ...TOTAL_FUTBALL_WORKOUT_PROGRAMS,
 ];
 
 const DEFAULT_CALENDAR_EVENTS = [
@@ -924,6 +838,7 @@ const BENCHMARKS = [
   { id: "vertical-jump", name: "Vertical Jump", category: "Plyometrics", unit: "in", lowerBetter: false, source: SOURCE_LABELS.plyoDoc },
   { id: "tempo-100-test", name: "Tempo 100m Average", category: "Recovery", unit: "sec", lowerBetter: true, source: SOURCE_LABELS.workbook },
   { id: "stanford-fitness", name: "Stanford Soccer Fitness", category: "Recovery", unit: "score", lowerBetter: false, source: SOURCE_LABELS.stanford },
+  ...TOTAL_FUTBALL_WORKOUT_SCORE_TARGETS,
 ];
 
 const TABS = [
@@ -940,14 +855,22 @@ const TABS = [
 ];
 
 const STORAGE_KEY = "apex-predator-elite:v1";
+const DAY_ORDER = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
 const today = () => new Date().toISOString().slice(0, 10);
 const uid = () => Math.random().toString(36).slice(2, 9);
 const num = (value) => Number(value) || 0;
-const compactDate = (date) => (date || "").slice(5);
-
 function currentDayName() {
   return new Date().toLocaleDateString("en-US", { weekday: "long" });
+}
+
+function dateForDayName(dayName) {
+  const targetIndex = DAY_ORDER.indexOf(dayName);
+  const date = new Date();
+  if (targetIndex < 0) return date.toISOString().slice(0, 10);
+  const offset = (targetIndex - date.getDay() + 7) % 7;
+  date.setDate(date.getDate() + offset);
+  return date.toISOString().slice(0, 10);
 }
 
 function recentCut(days) {
@@ -975,9 +898,17 @@ function estimateSession(dayName, readiness) {
   const base = WEEKLY_PLAN.find((x) => x.day === dayName) || WEEKLY_PLAN[0];
   const modifier = readiness <= 2 ? 0.65 : readiness >= 5 ? 1.1 : 1;
   return {
-    meters: Math.round(base.meters * modifier),
-    contacts: Math.round(base.contacts * modifier),
+    meters: Math.round((base.meters || 0) * modifier),
+    contacts: Math.round((base.contacts || 0) * modifier),
+    minutes: Math.round((base.minutes || 0) * modifier),
+    trainingLoad: Math.round((base.trainingLoad || (base.minutes || 0) * (base.rpe || 0)) * modifier),
   };
+}
+
+function mergeDefaultPrograms(savedPrograms) {
+  const saved = Array.isArray(savedPrograms) ? savedPrograms : [];
+  const savedIds = new Set(saved.map((program) => program.id));
+  return [...DEFAULT_PROGRAMS.filter((program) => !savedIds.has(program.id)), ...saved];
 }
 
 function sourceCount(log, days = 7) {
@@ -999,8 +930,41 @@ function getProgramDrills(program) {
 }
 
 function estimateProgramMinutes(program) {
+  if (program?.duration) return program.duration;
   const count = (program?.drills || []).length;
   return Math.max(20, count * 6);
+}
+
+function hydratePlanBlock(block, drillById) {
+  const drill = block.drillId ? drillById[block.drillId] : null;
+  return {
+    ...block,
+    name: block.name || drill?.name || "Training block",
+    category: block.category || drill?.category || "Recovery",
+    dose: block.dose || drill?.dose || "",
+    cue: block.cue || drill?.cues?.[0] || "",
+  };
+}
+
+function buildDailyRoutine(planItem, drillById, readiness) {
+  const estimate = estimateSession(planItem.day, readiness);
+  return {
+    id: `daily-${planItem.day.toLowerCase()}`,
+    date: dateForDayName(planItem.day),
+    day: planItem.day,
+    focus: planItem.focus,
+    sessionType: planItem.sessionType || planItem.focus,
+    intent: planItem.intent,
+    minutes: estimate.minutes,
+    trainingLoad: estimate.trainingLoad,
+    rpe: planItem.rpe,
+    intensity: planItem.intensity,
+    parentMode: planItem.parentMode,
+    nonNegotiable: planItem.nonNegotiable,
+    notes: planItem.notes,
+    programId: planItem.programId || "",
+    blocks: (planItem.blocks || []).map((block) => hydratePlanBlock(block, drillById)),
+  };
 }
 
 function groupsFromAthletes(athletes) {
@@ -1046,7 +1010,13 @@ function buildSessionEmail(event, programs, athletes) {
 
 export default function SpeedDesk() {
   const inviteCode = new URLSearchParams(window.location.search).get("team");
-  if (inviteCode) return <AthletePortal inviteCode={inviteCode} />;
+  if (inviteCode) {
+    return (
+      <Suspense fallback={<AppLoading text="Loading team portal..." />}>
+        <AthletePortal inviteCode={inviteCode} />
+      </Suspense>
+    );
+  }
 
   return <CoachApp />;
 }
@@ -1075,7 +1045,7 @@ function CoachApp() {
           const saved = JSON.parse(record.value);
           setFavorites(saved.favorites || []);
           setAthletes(saved.athletes?.length ? saved.athletes : DEFAULT_ATHLETES);
-          setPrograms(saved.programs?.length ? saved.programs : DEFAULT_PROGRAMS);
+          setPrograms(mergeDefaultPrograms(saved.programs));
           setCalendarEvents(saved.calendarEvents?.length ? saved.calendarEvents : DEFAULT_CALENDAR_EVENTS);
           setSessionLog(saved.sessionLog || []);
           setSpeedLog(saved.speedLog || []);
@@ -1158,7 +1128,7 @@ function CoachApp() {
         const saved = JSON.parse(reader.result);
         setFavorites(saved.favorites || []);
         setAthletes(saved.athletes?.length ? saved.athletes : DEFAULT_ATHLETES);
-        setPrograms(saved.programs?.length ? saved.programs : DEFAULT_PROGRAMS);
+        setPrograms(mergeDefaultPrograms(saved.programs));
         setCalendarEvents(saved.calendarEvents?.length ? saved.calendarEvents : DEFAULT_CALENDAR_EVENTS);
         setSessionLog(saved.sessionLog || []);
         setSpeedLog(saved.speedLog || []);
@@ -1178,6 +1148,14 @@ function CoachApp() {
   const drillById = useMemo(() => Object.fromEntries(DRILLS.map((x) => [x.id, x])), []);
   const plan = WEEKLY_PLAN.find((x) => x.day === selectedDay) || WEEKLY_PLAN[0];
   const estimate = estimateSession(selectedDay, readiness);
+  const dailyRoutines = useMemo(
+    () => WEEKLY_PLAN.map((planItem) => buildDailyRoutine(planItem, drillById, readiness)),
+    [drillById, readiness]
+  );
+  const activeRoutine = useMemo(
+    () => dailyRoutines.find((routine) => routine.day === selectedDay) || dailyRoutines[0],
+    [dailyRoutines, selectedDay]
+  );
 
   return (
     <div className="app-shell">
@@ -1230,15 +1208,19 @@ function CoachApp() {
           />
         )}
         {tab === "sync" && (
-          <TeamSync
-            athletes={athletes}
-            programs={programs}
-            calendarEvents={calendarEvents}
-            onFlash={(note) => {
-              setFlash(note);
-              setTimeout(() => setFlash(""), 1600);
-            }}
-          />
+          <Suspense fallback={<LoadingPanel title="Team Sync" text="Loading sync tools..." />}>
+            <TeamSync
+              athletes={athletes}
+              programs={programs}
+              calendarEvents={calendarEvents}
+              activeRoutine={activeRoutine}
+              dailyRoutines={dailyRoutines}
+              onFlash={(note) => {
+                setFlash(note);
+                setTimeout(() => setFlash(""), 1600);
+              }}
+            />
+          </Suspense>
         )}
         {tab === "email" && <EmailCenter athletes={athletes} programs={programs} calendarEvents={calendarEvents} />}
         {tab === "drills" && (
@@ -1286,6 +1268,10 @@ function Today({
         readiness,
         meters: estimate.meters,
         contacts: estimate.contacts,
+        minutes: estimate.minutes,
+        trainingLoad: estimate.trainingLoad,
+        intensity: plan.intensity,
+        parentMode: plan.parentMode,
         notes,
       },
       ...sessionLog,
@@ -1318,9 +1304,23 @@ function Today({
 
         <p className="lead">{plan.intent}</p>
         <div className="metric-grid">
-          <Metric label="Planned meters" value={estimate.meters} accent="orange" />
-          <Metric label="Jump contacts" value={estimate.contacts} accent="gold" />
+          {plan.minutes || plan.trainingLoad ? (
+            <>
+              <Metric label="Minutes" value={estimate.minutes} accent="orange" />
+              <Metric label="Load" value={estimate.trainingLoad} accent="gold" />
+            </>
+          ) : (
+            <>
+              <Metric label="Planned meters" value={estimate.meters} accent="orange" />
+              <Metric label="Jump contacts" value={estimate.contacts} accent="gold" />
+            </>
+          )}
           <Metric label="Sessions 7d" value={recentSessions.length} accent="green" />
+        </div>
+        <div className="detail-row">
+          <span>{plan.intensity || "Session"}</span>
+          <span>{plan.parentMode || "Coach"}</span>
+          <span>RPE {plan.rpe ?? "-"}</span>
         </div>
 
         <Field label={`Readiness: ${readiness}/5`}>
@@ -1337,20 +1337,21 @@ function Today({
 
       <Panel title="Session Blocks" sub="Source-derived plan for the selected day">
         <div className="block-list">
-          {plan.blocks.map((block, index) => (
-            <div className="block-item" key={`${block.name}-${index}`}>
-              <div className="block-main">
-                <Badge category={block.category} />
-                <div>
-                  <div className="item-title">{block.name}</div>
-                  <div className="muted">{block.dose}</div>
+          {plan.blocks.map((block, index) => {
+            const item = hydratePlanBlock(block, drillById);
+            return (
+              <div className="block-item" key={`${item.name}-${index}`}>
+                <div className="block-main">
+                  <Badge category={item.category} />
+                  <div>
+                    <div className="item-title">{item.name}</div>
+                    <div className="muted">{item.dose}</div>
+                  </div>
                 </div>
+                {item.cue && <div className="cue-line">{item.cue}</div>}
               </div>
-              {block.drillId && drillById[block.drillId] && (
-                <div className="cue-line">{drillById[block.drillId].cues[0]}</div>
-              )}
-            </div>
-          ))}
+            );
+          })}
         </div>
       </Panel>
 
@@ -1471,6 +1472,37 @@ function Team({ athletes, setAthletes }) {
   );
 }
 
+function WorkoutPack({ onLoadProgram }) {
+  return (
+    <Panel title="Total Futball Workout" sub={`${TOTAL_FUTBALL_WORKOUT_SOURCE.identity} - saved ${TOTAL_FUTBALL_WORKOUT_SOURCE.savedDate}`}>
+      <div className="metric-grid">
+        <Metric label="Minutes" value={TOTAL_FUTBALL_WORKOUT_SOURCE.summary.plannedMinutes} accent="orange" />
+        <Metric label="Load" value={TOTAL_FUTBALL_WORKOUT_SOURCE.summary.trainingLoad} accent="gold" />
+        <Metric label="Hard Days" value={TOTAL_FUTBALL_WORKOUT_SOURCE.summary.hardIndividualDays} accent="green" />
+      </div>
+      <div className="detail-row">
+        <span>{TOTAL_FUTBALL_WORKOUT_SOURCE.plan}</span>
+        <span>{TOTAL_FUTBALL_WORKOUT_SOURCE.rule}</span>
+        <span>{TOTAL_FUTBALL_WORKOUT_SOURCE.summary.restDays} rest day</span>
+      </div>
+      <div className="button-row">
+        <a className="ghost-btn link-btn" href={TOTAL_FUTBALL_WORKOUT_SOURCE.downloadPath} download>
+          Download Workbook
+        </a>
+      </div>
+      <div className="benchmark-grid workbook-program-grid">
+        {TOTAL_FUTBALL_WORKOUT_PROGRAMS.map((program) => (
+          <button className="benchmark-card" type="button" key={program.id} onClick={() => onLoadProgram(program)}>
+            <Badge category={program.focus} />
+            <span>{program.name}</span>
+            <strong>{program.duration} min - {program.intensity}</strong>
+          </button>
+        ))}
+      </div>
+    </Panel>
+  );
+}
+
 function Program({ drillById, programs, setPrograms }) {
   const [draft, setDraft] = useState({
     name: "New Group Workout",
@@ -1488,6 +1520,15 @@ function Program({ drillById, programs, setPrograms }) {
     setPrograms(programs.filter((program) => program.id !== id));
   };
 
+  const loadWorkbookProgram = (program) => {
+    setDraft({
+      name: program.name,
+      focus: program.focus,
+      notes: program.notes,
+      drills: [...program.drills],
+    });
+  };
+
   const setDrillAt = (index, drillId) => {
     const next = [...draft.drills];
     next[index] = drillId;
@@ -1500,6 +1541,8 @@ function Program({ drillById, programs, setPrograms }) {
 
   return (
     <>
+      <WorkoutPack onLoadProgram={loadWorkbookProgram} />
+
       <Panel title="Build Program" sub="Create a reusable training session from library drills">
         <div className="form-grid">
           <Field label="Program name">
@@ -1546,6 +1589,13 @@ function Program({ drillById, programs, setPrograms }) {
               </div>
               {!program.id.startsWith("prog-") && <DelBtn onClick={() => deleteProgram(program.id)} />}
             </div>
+            {program.source && (
+              <div className="detail-row">
+                <span>{program.source}</span>
+                {program.intensity && <span>{program.intensity}</span>}
+                {program.parentMode && <span>{program.parentMode}</span>}
+              </div>
+            )}
             <p className="muted tight">{program.notes}</p>
             <div className="mini-program-list">
               {getProgramDrills(program).map((drill, index) => (
@@ -1570,18 +1620,21 @@ function Program({ drillById, programs, setPrograms }) {
                   <div className="item-title">{day.focus}</div>
                 </div>
                 <div className="mini-stack">
-                  <span>{day.meters} m</span>
-                  <span>{day.contacts} contacts</span>
+                  <span>{day.minutes} min</span>
+                  <span>{day.trainingLoad} load</span>
                 </div>
               </div>
               <p className="muted tight">{day.intent}</p>
-              {day.blocks.map((block, index) => (
-                <div className="mini-row" key={`${day.day}-${block.name}-${index}`}>
-                  <Badge category={block.category} />
-                  <span>{block.name}</span>
-                  <strong>{block.dose}</strong>
-                </div>
-              ))}
+              {day.blocks.map((block, index) => {
+                const item = hydratePlanBlock(block, drillById);
+                return (
+                  <div className="mini-row" key={`${day.day}-${item.name}-${index}`}>
+                    <Badge category={item.category} />
+                    <span>{item.name}</span>
+                    <strong>{item.dose}</strong>
+                  </div>
+                );
+              })}
             </div>
           ))}
         </div>
@@ -2007,24 +2060,9 @@ function Trends({ speedLog, sessionLog, testLog }) {
         {timedRows.length < 2 ? (
           <Empty text="Log two timed reps of this drill to chart it." />
         ) : (
-          <div className="chart-box">
-            <ResponsiveContainer width="100%" height={220}>
-              <LineChart data={timedRows} margin={{ top: 10, right: 8, left: -22, bottom: 0 }}>
-                <CartesianGrid stroke="#253128" strokeDasharray="2 4" />
-                <XAxis dataKey="date" tick={{ fill: "#7f8a83", fontSize: 10 }} tickFormatter={compactDate} />
-                <YAxis
-                  tick={{ fill: "#7f8a83", fontSize: 10 }}
-                  tickFormatter={(value) => Number(value).toFixed(2)}
-                  domain={[
-                    (dataMin) => Math.max(0, Math.floor((dataMin - 0.1) * 100) / 100),
-                    (dataMax) => Math.ceil((dataMax + 0.1) * 100) / 100,
-                  ]}
-                />
-                <Tooltip contentStyle={{ background: "#121713", border: "1px solid #253128", borderRadius: 8, fontSize: 12 }} />
-                <Line type="monotone" dataKey="time" stroke="#f97316" strokeWidth={2.5} dot={{ r: 3 }} name="Time" />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
+          <Suspense fallback={<ChartFallback />}>
+            <TrendLineChart data={timedRows} />
+          </Suspense>
         )}
       </Panel>
 
@@ -2032,18 +2070,9 @@ function Trends({ speedLog, sessionLog, testLog }) {
         {weeklyVolume.length < 2 ? (
           <Empty text="Complete two sessions to see weekly load." />
         ) : (
-          <div className="chart-box">
-            <ResponsiveContainer width="100%" height={220}>
-              <BarChart data={weeklyVolume} margin={{ top: 10, right: 8, left: -22, bottom: 0 }}>
-                <CartesianGrid stroke="#253128" strokeDasharray="2 4" />
-                <XAxis dataKey="week" tick={{ fill: "#7f8a83", fontSize: 10 }} />
-                <YAxis tick={{ fill: "#7f8a83", fontSize: 10 }} />
-                <Tooltip contentStyle={{ background: "#121713", border: "1px solid #253128", borderRadius: 8, fontSize: 12 }} />
-                <Bar dataKey="meters" fill="#38bdf8" name="Meters" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="contacts" fill="#f6c453" name="Contacts" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
+          <Suspense fallback={<ChartFallback />}>
+            <TrendVolumeChart data={weeklyVolume} />
+          </Suspense>
         )}
       </Panel>
 
@@ -2163,6 +2192,34 @@ function DelBtn({ onClick }) {
     <button className="del-btn" type="button" onClick={onClick} aria-label="Delete entry">
       x
     </button>
+  );
+}
+
+function AppLoading({ text }) {
+  return (
+    <div className="app-shell">
+      <main className="content">
+        <section className="panel">
+          <Empty text={text} />
+        </section>
+      </main>
+    </div>
+  );
+}
+
+function LoadingPanel({ title, text }) {
+  return (
+    <Panel title={title}>
+      <Empty text={text} />
+    </Panel>
+  );
+}
+
+function ChartFallback() {
+  return (
+    <div className="chart-box">
+      <Empty text="Loading chart..." />
+    </div>
   );
 }
 

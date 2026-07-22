@@ -1,4 +1,4 @@
-const CACHE_NAME = "apex-predator-elite-v2";
+const CACHE_NAME = "apex-predator-elite-v3";
 const scopeUrl = new URL("./", self.registration.scope);
 const APP_SHELL = [
   "./",
@@ -58,5 +58,18 @@ self.addEventListener("fetch", (event) => {
         }
         return response;
       }))
+  );
+});
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const targetUrl = event.notification.data?.url || scopeUrl.toString();
+
+  event.waitUntil(
+    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((clientList) => {
+      const sameApp = clientList.find((client) => client.url.startsWith(scopeUrl.toString()));
+      if (sameApp) return sameApp.focus();
+      return self.clients.openWindow(targetUrl);
+    })
   );
 });
