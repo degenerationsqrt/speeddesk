@@ -799,9 +799,9 @@ const DEFAULT_PROGRAMS = [
   },
   {
     id: "prog-close-control",
-    name: "Close-Control Touch Block",
+    name: "Dribble Lab",
     focus: "Ball Mastery",
-    notes: "Built from the attached close-control and technical-touch trackers.",
+    notes: "Close-control touch circuit for both feet, rapid ball manipulation, and clean escape actions.",
     drills: ["right-foot-only-close", "left-foot-only-close", "inside-pendulum", "croquetas-lr", "ball-rolls-lr"],
   },
   {
@@ -906,7 +906,13 @@ function estimateSession(dayName, readiness) {
 }
 
 function mergeDefaultPrograms(savedPrograms) {
-  const saved = Array.isArray(savedPrograms) ? savedPrograms : [];
+  const saved = Array.isArray(savedPrograms)
+    ? savedPrograms.map((program) => {
+      if (!program || typeof program.name !== "string") return program;
+      const legacyName = /^dribble\s*up(?:\s+touch\s+lab)?$/i;
+      return legacyName.test(program.name.trim()) ? { ...program, name: "Dribble Lab" } : program;
+    })
+    : [];
   const savedIds = new Set(saved.map((program) => program.id));
   return [...DEFAULT_PROGRAMS.filter((program) => !savedIds.has(program.id)), ...saved];
 }
