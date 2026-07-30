@@ -6,6 +6,10 @@ import {
   TOTAL_FUTBALL_WORKOUT_SOURCE,
   TOTAL_FUTBALL_WORKOUT_WEEKLY_PLAN,
 } from "./data/totalFutballWorkout.js";
+import {
+  createWorkoutShareSnapshot,
+  decodeWorkoutShare,
+} from "./sync/workoutShare.js";
 
 const AthletePortal = lazy(() => import("./pages/AthletePortal.jsx"));
 const TeamSync = lazy(() => import("./pages/TeamSync.jsx"));
@@ -1017,11 +1021,40 @@ function buildSessionEmail(event, programs, athletes) {
 export default function SpeedDesk() {
   const searchParams = new URLSearchParams(window.location.search);
   const inviteCode = searchParams.get("team") || "";
-  const playerMode = Boolean(inviteCode) || searchParams.get("player") === "1";
+  const workoutToken = searchParams.get("workout") || "";
+  let sharedSnapshot = null;
+  let shareError = "";
+
+  if (workoutToken) {
+    try {
+      const share = decodeWorkoutShare(workoutToken);
+      const sharedDrillById = Object.fromEntries(DRILLS.map((drill) => [drill.id, drill]));
+      const sharedRoutines = WEEKLY_PLAN.map((planItem) => (
+        buildDailyRoutine(planItem, sharedDrillById, share.readiness)
+      ));
+      sharedSnapshot = createWorkoutShareSnapshot({
+        teamName: share.team.name,
+        coachLabel: share.team.coachLabel,
+        audienceName: share.assignmentTarget.type === "group"
+          ? share.assignmentTarget.name
+          : "all",
+        dailyRoutines: sharedRoutines,
+        sharedAt: share.syncedAt,
+      });
+    } catch (error) {
+      shareError = error.message || "This workout link could not be opened.";
+    }
+  }
+
+  const playerMode = Boolean(workoutToken) || Boolean(inviteCode) || searchParams.get("player") === "1";
   if (playerMode) {
     return (
       <Suspense fallback={<AppLoading text="Loading team portal..." />}>
-        <AthletePortal inviteCode={inviteCode} />
+        <AthletePortal
+          inviteCode={inviteCode}
+          sharedSnapshot={sharedSnapshot}
+          shareError={shareError}
+        />
       </Suspense>
     );
   }
@@ -1219,10 +1252,9 @@ function CoachApp() {
           <Suspense fallback={<LoadingPanel title="Team Sync" text="Loading sync tools..." />}>
             <TeamSync
               athletes={athletes}
-              programs={programs}
-              calendarEvents={calendarEvents}
               activeRoutine={activeRoutine}
               dailyRoutines={dailyRoutines}
+              readiness={readiness}
               onFlash={(note) => {
                 setFlash(note);
                 setTimeout(() => setFlash(""), 1600);
