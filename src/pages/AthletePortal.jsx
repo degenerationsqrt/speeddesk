@@ -650,7 +650,7 @@ export default function AthletePortal({ inviteCode }) {
             <p>Your workout will appear as soon as the coach approves {playerName || "the player"}.</p>
             <div className="pending-mark" aria-hidden="true">✓</div>
             <button className="player-secondary" type="button" onClick={() => loadContext()}>Check Again</button>
-            <button className="text-button" type="button" onClick={leaveAccount}>Sign out</button>
+            <button className="text-button" type="button" onClick={leaveAccount}>Sign out this device</button>
           </PlayerAccessCard>
         )}
 
@@ -658,7 +658,7 @@ export default function AthletePortal({ inviteCode }) {
           <PlayerAccessCard eyebrow="We hit a problem" title="Could not load">
             <p>{message || "Ask your coach for the newest invitation."}</p>
             <button className="player-primary" type="button" onClick={() => loadContext()}>Try Again</button>
-            {session && <button className="text-button" type="button" onClick={leaveAccount}>Sign out</button>}
+            {session && <button className="text-button" type="button" onClick={leaveAccount}>Sign out this device</button>}
           </PlayerAccessCard>
         )}
 
@@ -846,7 +846,7 @@ export default function AthletePortal({ inviteCode }) {
             </section>
 
             <button className="player-signout text-button" type="button" onClick={leaveAccount}>
-              Sign out of {athlete?.display_name || "player"}
+              Sign out this device
             </button>
           </>
         )}

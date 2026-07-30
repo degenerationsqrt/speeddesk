@@ -55,7 +55,7 @@ export async function sendSignInLink(email) {
 
 export async function signOut() {
   const client = await requireClient();
-  const { error } = await client.auth.signOut();
+  const { error } = await client.auth.signOut({ scope: "local" });
   if (error) throw error;
 }
 

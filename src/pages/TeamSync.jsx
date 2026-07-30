@@ -265,7 +265,7 @@ export default function TeamSync({ athletes, programs, calendarEvents, activeRou
               <div className="item-title">{session.user.email}</div>
               <div className="muted">Only approved team members can see player data.</div>
             </div>
-            <button className="ghost-btn" type="button" onClick={handleSignOut}>Sign out</button>
+            <button className="ghost-btn" type="button" onClick={handleSignOut}>Sign out this device</button>
           </div>
         ) : (
           <form className="coach-login" onSubmit={sendMagicLink}>
