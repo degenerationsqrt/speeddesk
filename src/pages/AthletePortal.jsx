@@ -1,9 +1,19 @@
-import { useEffect, useMemo, useRef, useState } from "react";
-import { fetchTeamSnapshotByInvite } from "../api/teamSync";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  getAuthSession,
+  loadPlayerPortal,
+  loadWorkoutAttempt,
+  saveWorkoutAttempt,
+  sendSignInLink,
+  signOut,
+  submitJoinRequest,
+  subscribeToAuth,
+} from "../api/teamAccount";
 import { getSupabaseSetupState } from "../api/supabaseConfig";
 
 const POLL_MS = 20000;
 const PROGRESS_KEY_PREFIX = "speeddesk:player-progress";
+const ATTEMPT_QUEUE_KEY = "speeddesk:attempt-queue";
 const DAY_ORDER = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
 function localDateString(date = new Date()) {
@@ -68,8 +78,21 @@ function routineProgressId(routine) {
   return [routine.date || today(), routine.day, routine.focus, routine.minutes, blocks].filter(Boolean).join("|");
 }
 
-function playerProgressKey(inviteCode, routineId) {
-  return `${PROGRESS_KEY_PREFIX}:${inviteCode || "team"}:${routineId}`;
+function playerProgressKey(athleteId, routineId) {
+  return `${PROGRESS_KEY_PREFIX}:${athleteId || "player"}:${routineId}`;
+}
+
+function emptyProgress() {
+  return {
+    started: false,
+    completed: false,
+    checked: [],
+    startedAt: "",
+    completedAt: "",
+    effort: null,
+    pain: null,
+    playerNote: "",
+  };
 }
 
 function formatSyncTime(value) {
@@ -87,24 +110,62 @@ function formatSessionDate(value) {
 }
 
 function loadProgress(key) {
-  if (typeof window === "undefined") return { started: false, completed: false, checked: [] };
+  if (typeof window === "undefined") return emptyProgress();
   try {
     const saved = window.localStorage.getItem(key);
-    if (!saved) return { started: false, completed: false, checked: [] };
+    if (!saved) return emptyProgress();
     const parsed = JSON.parse(saved);
     return {
+      ...emptyProgress(),
+      ...parsed,
       started: Boolean(parsed.started),
       completed: Boolean(parsed.completed),
       checked: Array.isArray(parsed.checked) ? parsed.checked : [],
     };
   } catch (error) {
-    return { started: false, completed: false, checked: [] };
+    return emptyProgress();
   }
 }
 
 function saveProgress(key, progress) {
   if (typeof window === "undefined") return;
   window.localStorage.setItem(key, JSON.stringify(progress));
+}
+
+function queuedAttempts() {
+  try {
+    const parsed = JSON.parse(window.localStorage.getItem(ATTEMPT_QUEUE_KEY) || "[]");
+    return Array.isArray(parsed) ? parsed : [];
+  } catch (error) {
+    return [];
+  }
+}
+
+function queueAttempt(payload) {
+  const key = `${payload.athleteId}:${payload.workoutKey}:${payload.workoutDate}`;
+  const remaining = queuedAttempts().filter((item) => item.queueKey !== key);
+  remaining.push({ ...payload, queueKey: key, syncSource: "offline_queue" });
+  window.localStorage.setItem(ATTEMPT_QUEUE_KEY, JSON.stringify(remaining.slice(-30)));
+}
+
+async function flushAttemptQueue() {
+  const queue = queuedAttempts();
+  if (!queue.length) return 0;
+  const failed = [];
+  let synced = 0;
+
+  for (const item of queue) {
+    try {
+      const { queueKey: _queueKey, ...payload } = item;
+      await saveWorkoutAttempt(payload);
+      synced += 1;
+    } catch (error) {
+      failed.push(item);
+    }
+  }
+
+  window.localStorage.setItem(ATTEMPT_QUEUE_KEY, JSON.stringify(failed));
+  return synced;
 }
 
 async function showRoutineNotification(routine) {
@@ -139,50 +200,113 @@ export default function AthletePortal({ inviteCode }) {
   const setup = getSupabaseSetupState();
   const [status, setStatus] = useState(setup.isConfigured ? "loading" : "setup");
   const [message, setMessage] = useState(setup.isConfigured ? "Getting today ready..." : "Team Sync is not set up yet.");
+  const [session, setSession] = useState(null);
+  const [email, setEmail] = useState("");
+  const [playerName, setPlayerName] = useState("");
+  const [accountType, setAccountType] = useState("player");
+  const [guardianConsent, setGuardianConsent] = useState(false);
+  const [accountBusy, setAccountBusy] = useState(false);
   const [snapshot, setSnapshot] = useState(null);
+  const [team, setTeam] = useState(null);
+  const [athlete, setAthlete] = useState(null);
+  const [groups, setGroups] = useState([]);
   const [notificationPermission, setNotificationPermission] = useState(notificationSupport);
-  const [progress, setProgress] = useState({ started: false, completed: false, checked: [] });
+  const [progress, setProgress] = useState(emptyProgress);
   const [selectedDay, setSelectedDay] = useState(currentDayName);
+  const [syncState, setSyncState] = useState("local");
+  const [finishOpen, setFinishOpen] = useState(false);
+  const [finishEffort, setFinishEffort] = useState(null);
+  const [finishPain, setFinishPain] = useState(0);
   const lastRoutineKey = useRef("");
+  const syncTimer = useRef(null);
 
-  useEffect(() => {
+  const loadContext = useCallback(async ({ notify = false } = {}) => {
     if (!setup.isConfigured) return;
 
-    let cancelled = false;
-
-    async function loadSnapshot({ notify } = { notify: false }) {
-      try {
-        const data = await fetchTeamSnapshotByInvite(inviteCode);
-        if (cancelled) return;
-
-        const nextKey = routineKey(data);
-        const previousKey = lastRoutineKey.current;
-        setSnapshot(data);
-        setStatus("ready");
+    try {
+      const authSession = await getAuthSession();
+      setSession(authSession);
+      if (!authSession) {
+        setStatus("auth");
         setMessage("");
-
-        if (notify && previousKey && nextKey && nextKey !== previousKey) {
-          setMessage("Coach updated your workout.");
-          showRoutineNotification(routineForDay(data));
-        }
-        lastRoutineKey.current = nextKey;
-      } catch (error) {
-        if (cancelled) return;
-        setStatus("error");
-        setMessage("");
+        return;
       }
-    }
 
-    loadSnapshot({ notify: false });
-    const poll = window.setInterval(() => loadSnapshot({ notify: true }), POLL_MS);
+      const context = await loadPlayerPortal();
+      if (!context.athlete) {
+        if (context.request?.status === "pending") {
+          setStatus("pending");
+          setPlayerName(context.request.player_name || "");
+          setMessage("Your coach will approve this account soon.");
+        } else {
+          setStatus("join");
+          setPlayerName(context.request?.player_name || context.profile?.display_name || "");
+          setMessage(context.request?.status === "rejected" ? "Ask your coach for help or try a new invite." : "");
+        }
+        return;
+      }
+
+      const nextKey = routineKey(context.snapshot);
+      const previousKey = lastRoutineKey.current;
+      setAthlete(context.athlete);
+      setTeam(context.team);
+      setGroups(context.groups || []);
+      setSnapshot(context.snapshot);
+      setStatus("ready");
+      setMessage("");
+
+      if (notify && previousKey && nextKey && nextKey !== previousKey) {
+        setMessage("Coach updated your workout.");
+        showRoutineNotification(routineForDay(context.snapshot));
+      }
+      lastRoutineKey.current = nextKey;
+
+      const synced = await flushAttemptQueue();
+      if (synced) {
+        setSyncState("synced");
+        setMessage(`${synced} saved workout update${synced === 1 ? "" : "s"} synced.`);
+      }
+    } catch (error) {
+      setStatus("error");
+      setMessage(error.message || "SpeedDesk could not load this account.");
+    }
+  }, [setup.isConfigured]);
+
+  useEffect(() => {
+    if (!setup.isConfigured) return undefined;
+    let mounted = true;
+    let stopAuth = () => {};
+
+    loadContext();
+    subscribeToAuth((nextSession) => {
+      if (!mounted) return;
+      setSession(nextSession);
+      loadContext();
+    }).then((unsubscribe) => {
+      stopAuth = unsubscribe;
+    });
+
+    const poll = window.setInterval(() => loadContext({ notify: true }), POLL_MS);
+    const handleOnline = () => loadContext();
+    window.addEventListener("online", handleOnline);
 
     return () => {
-      cancelled = true;
+      mounted = false;
+      stopAuth();
       window.clearInterval(poll);
+      window.removeEventListener("online", handleOnline);
     };
-  }, [inviteCode, setup.isConfigured]);
+  }, [loadContext, setup.isConfigured]);
 
-  const sessions = snapshot?.sessions || [];
+  const sessions = useMemo(() => {
+    const groupNames = new Set(groups.map((group) => group.name));
+    return (snapshot?.sessions || []).filter((event) => {
+      if (!event.targetType || event.targetType === "squad") return true;
+      if (event.targetType === "group") return groupNames.has(event.targetId);
+      if (event.targetType === "athlete") return String(event.targetId) === String(athlete?.source_key);
+      return false;
+    });
+  }, [athlete?.source_key, groups, snapshot?.sessions]);
   const dailyRoutines = useMemo(() => routineListFromSnapshot(snapshot), [snapshot]);
   const displayRoutines = useMemo(
     () => [...dailyRoutines].sort((a, b) => dayOffsetFromToday(a.day) - dayOffsetFromToday(b.day)),
@@ -192,7 +316,7 @@ export default function AthletePortal({ inviteCode }) {
   const activeRoutine = dailyRoutines.find((routine) => normalizedDayName(routine.day) === normalizedDayName(selectedDay)) || todaysRoutine;
   const selectedIsToday = normalizedDayName(activeRoutine?.day) === currentDayName();
   const routineId = useMemo(() => routineProgressId(activeRoutine), [activeRoutine]);
-  const progressKey = useMemo(() => playerProgressKey(inviteCode, routineId), [inviteCode, routineId]);
+  const progressKey = useMemo(() => playerProgressKey(athlete?.id, routineId), [athlete?.id, routineId]);
   const todaysSessions = useMemo(() => sessions.filter((event) => event.date === today()), [sessions]);
   const upcomingSessions = useMemo(() => sessions.filter((event) => event.date >= today()).slice(0, 3), [sessions]);
   const blocks = activeRoutine?.blocks || [];
@@ -202,39 +326,158 @@ export default function AthletePortal({ inviteCode }) {
   useEffect(() => {
     if (!dailyRoutines.length) return;
     setSelectedDay((current) => {
-      if (dailyRoutines.some((routine) => normalizedDayName(routine.day) === normalizedDayName(current))) return normalizedDayName(current) || current;
+      if (dailyRoutines.some((routine) => normalizedDayName(routine.day) === normalizedDayName(current))) {
+        return normalizedDayName(current) || current;
+      }
       return todaysRoutine?.day || dailyRoutines[0].day;
     });
   }, [dailyRoutines, todaysRoutine?.day]);
 
   useEffect(() => {
-    setProgress(loadProgress(progressKey));
-  }, [progressKey]);
+    if (!athlete || !activeRoutine) return;
+    let cancelled = false;
+    const local = loadProgress(progressKey);
+    setProgress(local);
+    setFinishEffort(local.effort);
+    setFinishPain(local.pain ?? 0);
 
-  const updateProgress = (nextProgress) => {
+    loadWorkoutAttempt({
+      athleteId: athlete.id,
+      workoutKey: routineId,
+      workoutDate: activeRoutine.date || today(),
+    }).then((cloud) => {
+      if (cancelled || !cloud) return;
+      const cloudProgress = {
+        started: true,
+        completed: cloud.status === "completed",
+        checked: Array.isArray(cloud.checked_steps) ? cloud.checked_steps : [],
+        startedAt: cloud.started_at || "",
+        completedAt: cloud.completed_at || "",
+        effort: cloud.effort,
+        pain: cloud.pain,
+        playerNote: cloud.player_note || "",
+      };
+      setProgress(cloudProgress);
+      saveProgress(progressKey, cloudProgress);
+      setFinishEffort(cloudProgress.effort);
+      setFinishPain(cloudProgress.pain ?? 0);
+      setSyncState("synced");
+    }).catch(() => {
+      setSyncState("local");
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [activeRoutine, athlete, progressKey, routineId]);
+
+  const attemptPayload = (nextProgress, syncSource = "web") => {
+    const startedAt = nextProgress.startedAt || new Date().toISOString();
+    const completedAt = nextProgress.completedAt || null;
+    const durationSeconds = completedAt
+      ? Math.max(0, Math.round((new Date(completedAt).getTime() - new Date(startedAt).getTime()) / 1000))
+      : null;
+
+    return {
+      teamId: athlete.team_id,
+      athleteId: athlete.id,
+      workoutKey: routineId,
+      workoutDate: activeRoutine.date || today(),
+      workoutTitle: activeRoutine.focus || "Workout",
+      startedAt,
+      completedAt,
+      completed: nextProgress.completed,
+      checked: nextProgress.checked,
+      effort: nextProgress.effort,
+      pain: nextProgress.pain,
+      durationSeconds,
+      playerNote: nextProgress.playerNote,
+      syncSource,
+    };
+  };
+
+  const syncProgress = async (nextProgress, immediate = false) => {
+    if (!athlete || !activeRoutine || !nextProgress.started) return;
+    const payload = attemptPayload(nextProgress);
+    setSyncState("syncing");
+
+    const write = async () => {
+      try {
+        await saveWorkoutAttempt(payload);
+        setSyncState("synced");
+      } catch (error) {
+        queueAttempt(payload);
+        setSyncState("queued");
+      }
+    };
+
+    if (immediate) {
+      if (syncTimer.current) window.clearTimeout(syncTimer.current);
+      await write();
+      return;
+    }
+
+    if (syncTimer.current) window.clearTimeout(syncTimer.current);
+    syncTimer.current = window.setTimeout(write, 500);
+  };
+
+  const updateProgress = (nextProgress, immediate = false) => {
     setProgress(nextProgress);
     saveProgress(progressKey, nextProgress);
+    syncProgress(nextProgress, immediate);
   };
 
   const startWorkout = () => {
-    updateProgress({ ...progress, started: true, completed: false });
+    const next = {
+      ...progress,
+      started: true,
+      completed: false,
+      startedAt: progress.startedAt || new Date().toISOString(),
+      completedAt: "",
+    };
+    updateProgress(next, true);
+    setMessage("Workout started. Tap each step when you finish it.");
   };
 
   const toggleBlock = (index) => {
     const checked = progress.checked.includes(index)
       ? progress.checked.filter((item) => item !== index)
       : [...progress.checked, index].sort((a, b) => a - b);
-    updateProgress({ ...progress, started: true, completed: false, checked });
+    updateProgress({
+      ...progress,
+      started: true,
+      completed: false,
+      startedAt: progress.startedAt || new Date().toISOString(),
+      completedAt: "",
+      checked,
+    });
   };
 
-  const completeWorkout = () => {
-    updateProgress({ started: true, completed: true, checked: blocks.map((_, index) => index) });
-    setMessage("Workout marked done. Nice work.");
+  const completeWorkout = async () => {
+    if (!finishEffort) return;
+    const next = {
+      ...progress,
+      started: true,
+      completed: true,
+      startedAt: progress.startedAt || new Date().toISOString(),
+      completedAt: new Date().toISOString(),
+      effort: finishEffort,
+      pain: finishPain,
+    };
+    updateProgress(next, true);
+    setFinishOpen(false);
+    setMessage(finishPain > 0 ? "Saved. Your coach can see that something hurt." : "Workout saved. Nice work.");
   };
 
   const resetWorkout = () => {
-    updateProgress({ started: false, completed: false, checked: [] });
-    setMessage("Workout reset.");
+    const next = emptyProgress();
+    setProgress(next);
+    saveProgress(progressKey, next);
+    setFinishEffort(null);
+    setFinishPain(0);
+    setFinishOpen(false);
+    setSyncState("local");
+    setMessage("Ready to do this workout again.");
   };
 
   const requestNotifications = async () => {
@@ -254,13 +497,70 @@ export default function AthletePortal({ inviteCode }) {
     }
   };
 
+  const emailSignIn = async () => {
+    if (!email.trim()) {
+      setMessage("Enter the player or parent email.");
+      return;
+    }
+    setAccountBusy(true);
+    try {
+      await sendSignInLink(email);
+      setMessage("Check your email and tap the SpeedDesk sign-in link.");
+    } catch (error) {
+      setMessage(error.message || "The sign-in email could not be sent.");
+    } finally {
+      setAccountBusy(false);
+    }
+  };
+
+  const joinTeam = async () => {
+    if (!playerName.trim()) {
+      setMessage("Enter the player name.");
+      return;
+    }
+    if (accountType === "guardian" && !guardianConsent) {
+      setMessage("A parent or guardian must approve the account.");
+      return;
+    }
+    setAccountBusy(true);
+    try {
+      await submitJoinRequest({ inviteCode, playerName, accountType });
+      await loadContext();
+    } catch (error) {
+      setMessage(error.message || "This invitation could not be used.");
+    } finally {
+      setAccountBusy(false);
+    }
+  };
+
+  const leaveAccount = async () => {
+    await signOut();
+    setSession(null);
+    setAthlete(null);
+    setSnapshot(null);
+    setStatus("auth");
+    setMessage("");
+  };
+
+  const syncLabel = syncState === "synced"
+    ? "Synced"
+    : syncState === "syncing"
+      ? "Saving"
+      : syncState === "queued"
+        ? "Saved offline"
+        : "On this device";
+
   return (
     <div className="app-shell player-shell">
       <header className="player-topbar">
         <div>
           <div className="player-brand">SpeedDesk Player</div>
-          <div className="player-team">{snapshot?.team?.name || "Team workout"}</div>
+          <div className="player-team">
+            {team?.name || "Join your team"}
+            {groups.length ? ` · ${groups.map((group) => group.name).join(", ")}` : ""}
+          </div>
         </div>
+        {status === "ready" && <span className={`status-pill ${syncState === "queued" ? "gold" : "green"}`}>{syncLabel}</span>}
       </header>
 
       <main className="player-content">
@@ -269,22 +569,97 @@ export default function AthletePortal({ inviteCode }) {
         {status === "setup" && (
           <PlayerEmpty
             title="Coach is setting this up"
-            text="This invite will work after the team sync is connected."
-          />
-        )}
-
-        {status === "error" && (
-          <PlayerEmpty
-            title="Invite did not load"
-            text="Ask your coach for the newest team link."
+            text="This invitation will work after secure Team Sync is connected."
           />
         )}
 
         {status === "loading" && (
-          <PlayerEmpty
-            title="Loading your workout"
-            text="Keep this page open for a second."
-          />
+          <PlayerEmpty title="Loading SpeedDesk" text="Getting your team and workout ready." />
+        )}
+
+        {status === "auth" && (
+          <PlayerAccessCard eyebrow="Team invitation" title="Sign in once">
+            <p>Use the player or parent email. After this, SpeedDesk keeps you signed in.</p>
+            <label className="player-field">
+              <span>Email</span>
+              <input
+                className="input"
+                type="email"
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+                placeholder="player-or-parent@email.com"
+                autoComplete="email"
+              />
+            </label>
+            <button className="player-primary" type="button" onClick={emailSignIn} disabled={accountBusy}>
+              {accountBusy ? "Sending..." : "Email My Sign-In Link"}
+            </button>
+            <small>A parent should use their email for younger players.</small>
+          </PlayerAccessCard>
+        )}
+
+        {status === "join" && session && (
+          <PlayerAccessCard eyebrow="Almost there" title="Who is training?">
+            <div className="account-choice" role="group" aria-label="Account type">
+              <button
+                className={accountType === "player" ? "active" : ""}
+                type="button"
+                onClick={() => setAccountType("player")}
+              >
+                <strong>Player</strong>
+                <span>I use my own email</span>
+              </button>
+              <button
+                className={accountType === "guardian" ? "active" : ""}
+                type="button"
+                onClick={() => setAccountType("guardian")}
+              >
+                <strong>Parent / Guardian</strong>
+                <span>I manage this player</span>
+              </button>
+            </div>
+            <label className="player-field">
+              <span>Player name</span>
+              <input
+                className="input"
+                value={playerName}
+                onChange={(event) => setPlayerName(event.target.value)}
+                placeholder="Player name"
+                autoComplete="name"
+              />
+            </label>
+            {accountType === "guardian" && (
+              <label className="guardian-check">
+                <input
+                  type="checkbox"
+                  checked={guardianConsent}
+                  onChange={(event) => setGuardianConsent(event.target.checked)}
+                />
+                <span>I am this player&apos;s parent or guardian and approve this account.</span>
+              </label>
+            )}
+            <button className="player-primary" type="button" onClick={joinTeam} disabled={accountBusy}>
+              {accountBusy ? "Joining..." : "Join Team"}
+            </button>
+            <button className="text-button" type="button" onClick={leaveAccount}>Use a different email</button>
+          </PlayerAccessCard>
+        )}
+
+        {status === "pending" && (
+          <PlayerAccessCard eyebrow="Request sent" title="Waiting for coach">
+            <p>Your workout will appear as soon as the coach approves {playerName || "the player"}.</p>
+            <div className="pending-mark" aria-hidden="true">✓</div>
+            <button className="player-secondary" type="button" onClick={() => loadContext()}>Check Again</button>
+            <button className="text-button" type="button" onClick={leaveAccount}>Sign out</button>
+          </PlayerAccessCard>
+        )}
+
+        {status === "error" && (
+          <PlayerAccessCard eyebrow="We hit a problem" title="Could not load">
+            <p>{message || "Ask your coach for the newest invitation."}</p>
+            <button className="player-primary" type="button" onClick={() => loadContext()}>Try Again</button>
+            {session && <button className="text-button" type="button" onClick={leaveAccount}>Sign out</button>}
+          </PlayerAccessCard>
         )}
 
         {status === "ready" && (
@@ -312,16 +687,13 @@ export default function AthletePortal({ inviteCode }) {
             <section className="player-card today-card">
               <div className="player-eyebrow">{selectedIsToday ? "Today" : activeRoutine?.day || "Workout plan"}</div>
               {!activeRoutine ? (
-                <PlayerEmpty
-                  title="No daily workout yet"
-                  text="Ask your coach to sync the daily workout plan."
-                />
+                <PlayerEmpty title="No workout yet" text="Your coach can add one later." />
               ) : (
                 <>
                   <div className="today-card-head">
                     <div>
                       <h1>{activeRoutine.focus}</h1>
-                      <p>{activeRoutine.intent || "Follow the steps below and check them off as you go."}</p>
+                      <p>{activeRoutine.intent || "Start, follow the steps, and finish."}</p>
                     </div>
                     <div className="time-badge">
                       <strong>{activeRoutine.minutes ?? "--"}</strong>
@@ -346,8 +718,8 @@ export default function AthletePortal({ inviteCode }) {
                       </button>
                     )}
                     {progress.started && !progress.completed && (
-                      <button className="player-primary" type="button" onClick={completeWorkout}>
-                        Mark Done
+                      <button className="player-primary" type="button" onClick={() => setFinishOpen(true)}>
+                        Finish Workout
                       </button>
                     )}
                     {progress.completed && (
@@ -360,12 +732,12 @@ export default function AthletePortal({ inviteCode }) {
               )}
             </section>
 
-            {activeRoutine && (
+            {activeRoutine && progress.started && (
               <section className="player-card">
                 <div className="player-section-head">
                   <div>
                     <div className="player-eyebrow">Workout steps</div>
-                    <h2>Do these in order</h2>
+                    <h2>Tap each one when done</h2>
                   </div>
                   <span className="status-pill gold">{activeRoutine.intensity || "Training"}</span>
                 </div>
@@ -377,6 +749,7 @@ export default function AthletePortal({ inviteCode }) {
                       type="button"
                       key={`${block.name}-${index}`}
                       onClick={() => toggleBlock(index)}
+                      disabled={progress.completed}
                     >
                       <span className="step-number">{progress.checked.includes(index) ? "OK" : index + 1}</span>
                       <span>
@@ -390,7 +763,7 @@ export default function AthletePortal({ inviteCode }) {
 
                 {(activeRoutine.nonNegotiable || activeRoutine.parentMode || activeRoutine.notes) && (
                   <div className="coach-note">
-                    <strong>Coach notes</strong>
+                    <strong>Coach says</strong>
                     {activeRoutine.nonNegotiable && <span>{activeRoutine.nonNegotiable}</span>}
                     {activeRoutine.parentMode && <span>{activeRoutine.parentMode}</span>}
                     {activeRoutine.notes && <span>{activeRoutine.notes}</span>}
@@ -399,11 +772,63 @@ export default function AthletePortal({ inviteCode }) {
               </section>
             )}
 
+            {finishOpen && (
+              <section className="player-card finish-card" aria-live="polite">
+                <div className="player-eyebrow">Finish workout</div>
+                <h2>How hard was it?</h2>
+                <div className="effort-grid">
+                  {[
+                    { value: 3, emoji: "😄", label: "Easy" },
+                    { value: 5, emoji: "🙂", label: "Good" },
+                    { value: 8, emoji: "😓", label: "Hard" },
+                    { value: 10, emoji: "🔥", label: "Max" },
+                  ].map((option) => (
+                    <button
+                      className={finishEffort === option.value ? "active" : ""}
+                      type="button"
+                      key={option.value}
+                      onClick={() => setFinishEffort(option.value)}
+                    >
+                      <span>{option.emoji}</span>
+                      <strong>{option.label}</strong>
+                    </button>
+                  ))}
+                </div>
+
+                <h2>Did anything hurt?</h2>
+                <div className="pain-choice">
+                  <button
+                    className={finishPain === 0 ? "active safe" : ""}
+                    type="button"
+                    onClick={() => setFinishPain(0)}
+                  >
+                    No pain
+                  </button>
+                  <button
+                    className={finishPain > 0 ? "active alert" : ""}
+                    type="button"
+                    onClick={() => setFinishPain(5)}
+                  >
+                    Something hurt
+                  </button>
+                </div>
+
+                <div className="player-action-row">
+                  <button className="player-secondary" type="button" onClick={() => setFinishOpen(false)}>Back</button>
+                  <button className="player-primary" type="button" onClick={completeWorkout} disabled={!finishEffort}>
+                    Save Workout
+                  </button>
+                </div>
+              </section>
+            )}
+
             <section className="player-card player-setup-card">
               <div>
                 <div className="player-eyebrow">Updates</div>
-                <h2>Daily plan syncs here</h2>
-                <p>Synced {formatSyncTime(snapshot?.syncedAt)}. Leave alerts on so you know when a daily workout changes.</p>
+                <h2>Your work saves to coach</h2>
+                <p>
+                  Plan synced {formatSyncTime(snapshot?.syncedAt)}. A watch is optional; Apple, Samsung, and Strava connections can be added without changing this simple flow.
+                </p>
               </div>
               <button className="player-secondary" type="button" onClick={requestNotifications}>
                 {notificationPermission === "granted" ? "Alerts On" : notificationPermission === "denied" ? "Alerts Blocked" : "Turn On Alerts"}
@@ -419,10 +844,24 @@ export default function AthletePortal({ inviteCode }) {
               </div>
               <SimpleSchedule sessions={todaysSessions.length ? todaysSessions : upcomingSessions} />
             </section>
+
+            <button className="player-signout text-button" type="button" onClick={leaveAccount}>
+              Sign out of {athlete?.display_name || "player"}
+            </button>
           </>
         )}
       </main>
     </div>
+  );
+}
+
+function PlayerAccessCard({ eyebrow, title, children }) {
+  return (
+    <section className="player-card access-card">
+      <div className="player-eyebrow">{eyebrow}</div>
+      <h2>{title}</h2>
+      {children}
+    </section>
   );
 }
 

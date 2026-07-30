@@ -1,4 +1,4 @@
-const CACHE_NAME = "apex-predator-elite-v3";
+const CACHE_NAME = "apex-predator-elite-v4";
 const scopeUrl = new URL("./", self.registration.scope);
 const APP_SHELL = [
   "./",

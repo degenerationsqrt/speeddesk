@@ -1,4 +1,5 @@
 import { isSupabaseConfigured } from "./supabaseConfig";
+import { syncSecureTeam } from "./teamAccount";
 
 export function createInviteCode() {
   const source = crypto.getRandomValues(new Uint32Array(2));
@@ -30,8 +31,6 @@ export function buildTeamSnapshot({ team, athletes, programs, calendarEvents, ac
       coachLabel: team.coachLabel,
       inviteCode: team.inviteCode,
     },
-    athletes,
-    programs,
     sessions: calendarEvents,
     activeRoutine,
     dailyRoutines: Array.isArray(dailyRoutines) ? dailyRoutines : activeRoutine ? [activeRoutine] : [],
@@ -40,43 +39,13 @@ export function buildTeamSnapshot({ team, athletes, programs, calendarEvents, ac
   };
 }
 
-export async function upsertTeamSnapshot(snapshot) {
+export async function upsertTeamSnapshot(snapshot, athletes = []) {
   if (!isSupabaseConfigured) {
     throw new Error("Supabase is not configured.");
   }
-
-  const { supabase } = await import("./supabaseClient");
-  if (!supabase) throw new Error("Supabase is not configured.");
-
-  const { error } = await supabase
-    .from("team_snapshots")
-    .upsert({
-      team_id: snapshot.team.id,
-      team_name: snapshot.team.name,
-      invite_code: snapshot.team.inviteCode,
-      payload: snapshot,
-      updated_at: snapshot.syncedAt,
-    }, { onConflict: "team_id" });
-
-  if (error) throw error;
-  return snapshot;
+  return syncSecureTeam({ snapshot, athletes });
 }
 
 export async function fetchTeamSnapshotByInvite(inviteCode) {
-  if (!isSupabaseConfigured) {
-    throw new Error("Supabase is not configured.");
-  }
-
-  const { supabase } = await import("./supabaseClient");
-  if (!supabase) throw new Error("Supabase is not configured.");
-
-  const { data, error } = await supabase
-    .from("team_snapshots")
-    .select("payload")
-    .eq("invite_code", inviteCode)
-    .maybeSingle();
-
-  if (error) throw error;
-  if (!data?.payload) throw new Error("No team was found for this invite code.");
-  return data.payload;
+  throw new Error(`Sign in to redeem team invite ${String(inviteCode || "").slice(-4)}.`);
 }
