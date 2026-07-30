@@ -64,7 +64,7 @@ export function useTeamSync({ athletes, programs, calendarEvents, activeRoutine,
     setMessage("Syncing roster, schedule, and daily workouts...");
 
     try {
-      const synced = await upsertTeamSnapshot(snapshot);
+      const synced = await upsertTeamSnapshot(snapshot, athletes);
       setTeam((current) => ({ ...current, lastSyncedAt: synced.syncedAt }));
       setStatus("synced");
       setMessage("Daily workout plan synced. Player apps will update on refresh or polling.");

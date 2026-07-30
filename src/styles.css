@@ -657,6 +657,134 @@ textarea {
   color: #f6c453;
 }
 
+.status-pill.muted {
+  color: #8b968f;
+}
+
+.account-strip,
+.invite-result,
+.proof-card-main {
+  align-items: center;
+  display: flex;
+  gap: 14px;
+  justify-content: space-between;
+}
+
+.account-strip .item-title {
+  margin-top: 8px;
+}
+
+.coach-login,
+.invite-builder {
+  align-items: end;
+  display: grid;
+  gap: 10px;
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.coach-login .save-btn,
+.invite-builder .save-btn {
+  margin-top: 0;
+  white-space: nowrap;
+}
+
+.group-switcher {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.group-chip {
+  background: #101611;
+  border: 1px solid #314037;
+  border-radius: 999px;
+  color: #d6ded9;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 800;
+  padding: 8px 12px;
+}
+
+.group-chip.active {
+  background: rgba(34, 197, 94, 0.14);
+  border-color: #22c55e;
+  color: #b7f7c9;
+}
+
+.invite-result {
+  background: linear-gradient(135deg, rgba(246, 196, 83, 0.13), rgba(34, 197, 94, 0.08));
+  border: 1px solid rgba(246, 196, 83, 0.45);
+  border-radius: 8px;
+  margin: 12px 0;
+  padding: 13px;
+}
+
+.invite-result > div:first-child {
+  display: grid;
+  gap: 4px;
+}
+
+.eyebrow {
+  color: #f6c453;
+  font-size: 10px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.invite-code {
+  color: #f8fafc;
+  font-family: Oswald, Impact, sans-serif;
+  font-size: 28px;
+  letter-spacing: 2px;
+}
+
+.text-button {
+  background: transparent;
+  border: 0;
+  color: #a7b0aa;
+  cursor: pointer;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 800;
+  padding: 6px 0;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.text-button.danger {
+  color: #fb7185;
+  text-decoration: none;
+}
+
+.button-row.compact {
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.button-row.compact .ghost-btn {
+  padding: 7px 9px;
+}
+
+.proof-list {
+  display: grid;
+  gap: 9px;
+}
+
+.proof-card {
+  background: #101611;
+  border: 1px solid #253128;
+  border-radius: 8px;
+  display: grid;
+  gap: 10px;
+  padding: 11px;
+}
+
+.proof-card .button-row {
+  border-top: 1px solid #253128;
+  margin-top: 0;
+  padding-top: 9px;
+}
+
 .coach-card {
   background: #101611;
   border: 1px solid #253128;
@@ -1226,6 +1354,186 @@ textarea {
   line-height: 1.25;
 }
 
+.access-card {
+  display: grid;
+  gap: 14px;
+  margin-top: min(8vh, 58px);
+}
+
+.access-card > h2,
+.access-card > p,
+.finish-card > h2 {
+  margin: 0;
+}
+
+.access-card > p,
+.access-card > small {
+  color: #a7b0aa;
+  line-height: 1.45;
+}
+
+.player-field {
+  display: grid;
+  gap: 7px;
+}
+
+.player-field > span {
+  color: #d6ded9;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.account-choice {
+  display: grid;
+  gap: 9px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.account-choice button,
+.effort-grid button,
+.pain-choice button {
+  background: #101611;
+  border: 1px solid #314037;
+  border-radius: 8px;
+  color: #d6ded9;
+  cursor: pointer;
+}
+
+.account-choice button {
+  display: grid;
+  gap: 4px;
+  min-height: 82px;
+  padding: 12px;
+  text-align: left;
+}
+
+.account-choice button.active {
+  background: rgba(34, 197, 94, 0.13);
+  border-color: #22c55e;
+}
+
+.account-choice strong,
+.account-choice span {
+  display: block;
+}
+
+.account-choice strong {
+  color: #f8fafc;
+  font-size: 14px;
+}
+
+.account-choice span {
+  color: #a7b0aa;
+  font-size: 11px;
+  line-height: 1.3;
+}
+
+.guardian-check {
+  align-items: flex-start;
+  background: rgba(246, 196, 83, 0.08);
+  border: 1px solid rgba(246, 196, 83, 0.35);
+  border-radius: 8px;
+  color: #d6ded9;
+  display: flex;
+  font-size: 12px;
+  gap: 9px;
+  line-height: 1.4;
+  padding: 11px;
+}
+
+.guardian-check input {
+  accent-color: #22c55e;
+  margin-top: 2px;
+}
+
+.pending-mark {
+  align-items: center;
+  background: rgba(34, 197, 94, 0.15);
+  border: 1px solid rgba(34, 197, 94, 0.55);
+  border-radius: 50%;
+  color: #22c55e;
+  display: flex;
+  font-size: 38px;
+  height: 82px;
+  justify-content: center;
+  justify-self: center;
+  width: 82px;
+}
+
+.finish-card {
+  border-color: rgba(246, 196, 83, 0.48);
+  display: grid;
+  gap: 16px;
+}
+
+.effort-grid {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.effort-grid button {
+  display: grid;
+  gap: 4px;
+  justify-items: center;
+  min-height: 76px;
+  padding: 9px 5px;
+}
+
+.effort-grid button.active {
+  background: rgba(249, 115, 22, 0.18);
+  border-color: #f97316;
+}
+
+.effort-grid span {
+  font-size: 24px;
+}
+
+.effort-grid strong {
+  font-size: 11px;
+}
+
+.pain-choice {
+  display: grid;
+  gap: 9px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.pain-choice button {
+  font-weight: 900;
+  min-height: 48px;
+  padding: 10px;
+}
+
+.pain-choice button.active.safe {
+  background: rgba(34, 197, 94, 0.14);
+  border-color: #22c55e;
+  color: #b7f7c9;
+}
+
+.pain-choice button.active.alert {
+  background: rgba(244, 63, 94, 0.14);
+  border-color: #fb7185;
+  color: #fecdd3;
+}
+
+.player-primary:disabled,
+.player-secondary:disabled,
+.save-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.48;
+}
+
+.player-step:disabled {
+  cursor: default;
+  opacity: 0.82;
+}
+
+.player-signout {
+  justify-self: center;
+  margin-top: 2px;
+}
+
 @media (max-width: 760px) {
   .content {
     max-width: 560px;
@@ -1279,6 +1587,30 @@ textarea {
 
   .player-setup-card .player-secondary {
     width: 100%;
+  }
+
+  .coach-login,
+  .invite-builder {
+    align-items: stretch;
+    grid-template-columns: 1fr;
+  }
+
+  .account-strip,
+  .invite-result,
+  .proof-card-main,
+  .request-row {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .invite-result .button-row,
+  .request-row .button-row {
+    justify-content: stretch;
+  }
+
+  .invite-result .ghost-btn,
+  .request-row .ghost-btn {
+    flex: 1;
   }
 }
 
@@ -1340,6 +1672,16 @@ textarea {
     height: 34px;
     width: 54px;
   }
+
+  .account-choice,
+  .pain-choice {
+    grid-template-columns: 1fr;
+  }
+
+  .effort-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .coach-note strong {
   color: #f6c453;
   text-transform: uppercase;
