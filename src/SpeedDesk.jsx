@@ -12,7 +12,7 @@ import {
 } from "./sync/workoutShare.js";
 
 const AthletePortal = lazy(() => import("./pages/AthletePortal.jsx"));
-const TeamSync = lazy(() => import("./pages/TeamSync.jsx"));
+const CoachPlanner = lazy(() => import("./pages/CoachPlanner.jsx"));
 const TrendLineChart = lazy(() => import("./components/TrendLineChart.jsx"));
 const TrendVolumeChart = lazy(() => import("./components/TrendVolumeChart.jsx"));
 
@@ -846,16 +846,10 @@ const BENCHMARKS = [
 ];
 
 const TABS = [
-  { key: "today", label: "Today" },
-  { key: "team", label: "Team" },
-  { key: "program", label: "Programs" },
-  { key: "calendar", label: "Calendar" },
-  { key: "sync", label: "Sync" },
-  { key: "email", label: "Email" },
-  { key: "drills", label: "Drills" },
-  { key: "log", label: "Log" },
-  { key: "tests", label: "Tests" },
-  { key: "trends", label: "Trends" },
+  { key: "plan", label: "Plan" },
+  { key: "players", label: "Players" },
+  { key: "progress", label: "Progress" },
+  { key: "more", label: "More" },
 ];
 
 const STORAGE_KEY = "apex-predator-elite:v1";
@@ -898,8 +892,7 @@ function bestTestFor(testId, testLog) {
   }, null);
 }
 
-function estimateSession(dayName, readiness) {
-  const base = WEEKLY_PLAN.find((x) => x.day === dayName) || WEEKLY_PLAN[0];
+function estimatePlanItem(base, readiness) {
   const modifier = readiness <= 2 ? 0.65 : readiness >= 5 ? 1.1 : 1;
   return {
     meters: Math.round((base.meters || 0) * modifier),
@@ -907,6 +900,25 @@ function estimateSession(dayName, readiness) {
     minutes: Math.round((base.minutes || 0) * modifier),
     trainingLoad: Math.round((base.trainingLoad || (base.minutes || 0) * (base.rpe || 0)) * modifier),
   };
+}
+
+function estimateSession(dayName, readiness) {
+  const base = WEEKLY_PLAN.find((x) => x.day === dayName) || WEEKLY_PLAN[0];
+  return estimatePlanItem(base, readiness);
+}
+
+function normalizeWeekPlan(savedPlan) {
+  const savedByDay = new Map(
+    (Array.isArray(savedPlan) ? savedPlan : [])
+      .filter((item) => item && DAY_ORDER.includes(item.day))
+      .map((item) => [item.day, item])
+  );
+  return WEEKLY_PLAN.map((fallback) => {
+    const saved = savedByDay.get(fallback.day);
+    return saved
+      ? { ...fallback, ...saved, day: fallback.day, blocks: Array.isArray(saved.blocks) ? saved.blocks : fallback.blocks }
+      : { ...fallback, blocks: [...fallback.blocks] };
+  });
 }
 
 function mergeDefaultPrograms(savedPrograms) {
@@ -957,7 +969,7 @@ function hydratePlanBlock(block, drillById) {
 }
 
 function buildDailyRoutine(planItem, drillById, readiness) {
-  const estimate = estimateSession(planItem.day, readiness);
+  const estimate = estimatePlanItem(planItem, readiness);
   return {
     id: `daily-${planItem.day.toLowerCase()}`,
     date: dateForDayName(planItem.day),
@@ -1029,9 +1041,11 @@ export default function SpeedDesk() {
     try {
       const share = decodeWorkoutShare(workoutToken);
       const sharedDrillById = Object.fromEntries(DRILLS.map((drill) => [drill.id, drill]));
-      const sharedRoutines = WEEKLY_PLAN.map((planItem) => (
-        buildDailyRoutine(planItem, sharedDrillById, share.readiness)
-      ));
+      const sharedRoutines = share.dailyRoutines.length
+        ? share.dailyRoutines
+        : WEEKLY_PLAN.map((planItem) => (
+            buildDailyRoutine(planItem, sharedDrillById, share.readiness)
+          ));
       sharedSnapshot = createWorkoutShareSnapshot({
         teamName: share.team.name,
         coachLabel: share.team.coachLabel,
@@ -1039,6 +1053,7 @@ export default function SpeedDesk() {
           ? share.assignmentTarget.name
           : "all",
         dailyRoutines: sharedRoutines,
+        selectedDay: share.selectedDay,
         sharedAt: share.syncedAt,
       });
     } catch (error) {
@@ -1063,7 +1078,7 @@ export default function SpeedDesk() {
 }
 
 function CoachApp() {
-  const [tab, setTab] = useState("today");
+  const [tab, setTab] = useState("plan");
   const [selectedDay, setSelectedDay] = useState(currentDayName());
   const [readiness, setReadiness] = useState(4);
   const [drillQuery, setDrillQuery] = useState("");
@@ -1071,6 +1086,7 @@ function CoachApp() {
   const [favorites, setFavorites] = useState([]);
   const [athletes, setAthletes] = useState(DEFAULT_ATHLETES);
   const [programs, setPrograms] = useState(DEFAULT_PROGRAMS);
+  const [weekPlan, setWeekPlan] = useState(() => normalizeWeekPlan(WEEKLY_PLAN));
   const [calendarEvents, setCalendarEvents] = useState(DEFAULT_CALENDAR_EVENTS);
   const [sessionLog, setSessionLog] = useState([]);
   const [speedLog, setSpeedLog] = useState([]);
@@ -1087,6 +1103,7 @@ function CoachApp() {
           setFavorites(saved.favorites || []);
           setAthletes(saved.athletes?.length ? saved.athletes : DEFAULT_ATHLETES);
           setPrograms(mergeDefaultPrograms(saved.programs));
+          setWeekPlan(normalizeWeekPlan(saved.weekPlan));
           setCalendarEvents(saved.calendarEvents?.length ? saved.calendarEvents : DEFAULT_CALENDAR_EVENTS);
           setSessionLog(saved.sessionLog || []);
           setSpeedLog(saved.speedLog || []);
@@ -1109,6 +1126,7 @@ function CoachApp() {
           favorites,
           athletes,
           programs,
+          weekPlan,
           calendarEvents,
           sessionLog,
           speedLog,
@@ -1128,7 +1146,7 @@ function CoachApp() {
   useEffect(() => {
     if (loaded) persist("Saved");
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [favorites, athletes, programs, calendarEvents, sessionLog, speedLog, testLog, selectedDay, readiness]);
+  }, [favorites, athletes, programs, weekPlan, calendarEvents, sessionLog, speedLog, testLog, selectedDay, readiness]);
 
   const toggleFavorite = (id) => {
     setFavorites((current) => (current.includes(id) ? current.filter((x) => x !== id) : [id, ...current]));
@@ -1139,6 +1157,7 @@ function CoachApp() {
       favorites,
       athletes,
       programs,
+      weekPlan,
       calendarEvents,
       sessionLog,
       speedLog,
@@ -1170,6 +1189,7 @@ function CoachApp() {
         setFavorites(saved.favorites || []);
         setAthletes(saved.athletes?.length ? saved.athletes : DEFAULT_ATHLETES);
         setPrograms(mergeDefaultPrograms(saved.programs));
+        setWeekPlan(normalizeWeekPlan(saved.weekPlan));
         setCalendarEvents(saved.calendarEvents?.length ? saved.calendarEvents : DEFAULT_CALENDAR_EVENTS);
         setSessionLog(saved.sessionLog || []);
         setSpeedLog(saved.speedLog || []);
@@ -1187,11 +1207,9 @@ function CoachApp() {
   };
 
   const drillById = useMemo(() => Object.fromEntries(DRILLS.map((x) => [x.id, x])), []);
-  const plan = WEEKLY_PLAN.find((x) => x.day === selectedDay) || WEEKLY_PLAN[0];
-  const estimate = estimateSession(selectedDay, readiness);
   const dailyRoutines = useMemo(
-    () => WEEKLY_PLAN.map((planItem) => buildDailyRoutine(planItem, drillById, readiness)),
-    [drillById, readiness]
+    () => weekPlan.map((planItem) => buildDailyRoutine(planItem, drillById, readiness)),
+    [drillById, readiness, weekPlan]
   );
   const activeRoutine = useMemo(
     () => dailyRoutines.find((routine) => routine.day === selectedDay) || dailyRoutines[0],
@@ -1215,6 +1233,7 @@ function CoachApp() {
               className={tab === item.key ? "tab active" : "tab"}
               onClick={() => setTab(item.key)}
               type="button"
+              aria-current={tab === item.key ? "page" : undefined}
             >
               {item.label}
             </button>
@@ -1223,38 +1242,20 @@ function CoachApp() {
       </header>
 
       <main className="content">
-        {tab === "today" && (
-          <Today
-            plan={plan}
-            selectedDay={selectedDay}
-            setSelectedDay={setSelectedDay}
-            readiness={readiness}
-            setReadiness={setReadiness}
-            estimate={estimate}
-            sessionLog={sessionLog}
-            setSessionLog={setSessionLog}
-            drillById={drillById}
-            exportData={exportData}
-            importData={importData}
-          />
-        )}
-        {tab === "team" && <Team athletes={athletes} setAthletes={setAthletes} />}
-        {tab === "program" && <Program drillById={drillById} programs={programs} setPrograms={setPrograms} />}
-        {tab === "calendar" && (
-          <Calendar
-            athletes={athletes}
-            programs={programs}
-            calendarEvents={calendarEvents}
-            setCalendarEvents={setCalendarEvents}
-          />
-        )}
-        {tab === "sync" && (
-          <Suspense fallback={<LoadingPanel title="Team Sync" text="Loading sync tools..." />}>
-            <TeamSync
+        {tab === "plan" && (
+          <Suspense fallback={<LoadingPanel title="Coach Plan" text="Loading workout planner..." />}>
+            <CoachPlanner
               athletes={athletes}
+              programs={programs}
+              drills={DRILLS}
+              weekPlan={weekPlan}
+              setWeekPlan={setWeekPlan}
+              selectedDay={selectedDay}
+              setSelectedDay={setSelectedDay}
               activeRoutine={activeRoutine}
               dailyRoutines={dailyRoutines}
               readiness={readiness}
+              setReadiness={setReadiness}
               onFlash={(note) => {
                 setFlash(note);
                 setTimeout(() => setFlash(""), 1600);
@@ -1262,22 +1263,191 @@ function CoachApp() {
             />
           </Suspense>
         )}
-        {tab === "email" && <EmailCenter athletes={athletes} programs={programs} calendarEvents={calendarEvents} />}
-        {tab === "drills" && (
-          <Drills
-            query={drillQuery}
-            setQuery={setDrillQuery}
+        {tab === "players" && <Team athletes={athletes} setAthletes={setAthletes} />}
+        {tab === "progress" && (
+          <ProgressHub
+            speedLog={speedLog}
+            setSpeedLog={setSpeedLog}
+            sessionLog={sessionLog}
+            testLog={testLog}
+            setTestLog={setTestLog}
+          />
+        )}
+        {tab === "more" && (
+          <MoreHub
+            athletes={athletes}
+            programs={programs}
+            calendarEvents={calendarEvents}
+            setCalendarEvents={setCalendarEvents}
+            drillQuery={drillQuery}
+            setDrillQuery={setDrillQuery}
             category={category}
             setCategory={setCategory}
             favorites={favorites}
             toggleFavorite={toggleFavorite}
+            exportData={exportData}
+            importData={importData}
           />
         )}
-        {tab === "log" && <SpeedLog speedLog={speedLog} setSpeedLog={setSpeedLog} />}
-        {tab === "tests" && <Tests testLog={testLog} setTestLog={setTestLog} />}
-        {tab === "trends" && <Trends speedLog={speedLog} sessionLog={sessionLog} testLog={testLog} />}
       </main>
     </div>
+  );
+}
+
+function ProgressHub({
+  speedLog,
+  setSpeedLog,
+  sessionLog,
+  testLog,
+  setTestLog,
+}) {
+  const [section, setSection] = useState("overview");
+
+  return (
+    <>
+      <section className="panel condensed-hub-head">
+        <div>
+          <div className="planner-kicker">Athlete development</div>
+          <h1>Progress</h1>
+          <p>Workouts, speed and benchmark testing in one place.</p>
+        </div>
+        <div className="secondary-tabs" role="tablist" aria-label="Progress sections">
+          {[
+            ["overview", "Overview"],
+            ["speed", "Speed Log"],
+            ["tests", "Tests"],
+          ].map(([key, label]) => (
+            <button
+              className={section === key ? "active" : ""}
+              type="button"
+              role="tab"
+              aria-selected={section === key}
+              onClick={() => setSection(key)}
+              key={key}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      </section>
+
+      {section === "overview" ? (
+        <Trends speedLog={speedLog} sessionLog={sessionLog} testLog={testLog} />
+      ) : null}
+      {section === "speed" ? <SpeedLog speedLog={speedLog} setSpeedLog={setSpeedLog} /> : null}
+      {section === "tests" ? <Tests testLog={testLog} setTestLog={setTestLog} /> : null}
+    </>
+  );
+}
+
+function MoreHub({
+  athletes,
+  programs,
+  calendarEvents,
+  setCalendarEvents,
+  drillQuery,
+  setDrillQuery,
+  category,
+  setCategory,
+  favorites,
+  toggleFavorite,
+  exportData,
+  importData,
+}) {
+  const [section, setSection] = useState("home");
+
+  if (section === "schedule") {
+    return (
+      <>
+        <HubBack title="Schedule" onBack={() => setSection("home")} />
+        <Calendar
+          athletes={athletes}
+          programs={programs}
+          calendarEvents={calendarEvents}
+          setCalendarEvents={setCalendarEvents}
+        />
+      </>
+    );
+  }
+
+  if (section === "library") {
+    return (
+      <>
+        <HubBack title="Drill Library" onBack={() => setSection("home")} />
+        <Drills
+          query={drillQuery}
+          setQuery={setDrillQuery}
+          category={category}
+          setCategory={setCategory}
+          favorites={favorites}
+          toggleFavorite={toggleFavorite}
+        />
+      </>
+    );
+  }
+
+  if (section === "data") {
+    return (
+      <>
+        <HubBack title="Data & Backup" onBack={() => setSection("home")} />
+        <BackupPanel exportData={exportData} importData={importData} />
+      </>
+    );
+  }
+
+  return (
+    <section className="panel more-hub">
+      <div className="planner-kicker">Utilities</div>
+      <h1>More</h1>
+      <p>Keep secondary tools out of the main coaching workflow.</p>
+      <div className="more-card-grid">
+        <button type="button" onClick={() => setSection("schedule")}>
+          <span>Schedule</span>
+          <strong>Team sessions and locations</strong>
+        </button>
+        <button type="button" onClick={() => setSection("library")}>
+          <span>Drill Library</span>
+          <strong>Search every available exercise</strong>
+        </button>
+        <button type="button" onClick={() => setSection("data")}>
+          <span>Data & Backup</span>
+          <strong>Export or restore the coach plan</strong>
+        </button>
+      </div>
+    </section>
+  );
+}
+
+function HubBack({ title, onBack }) {
+  return (
+    <section className="panel hub-back">
+      <button className="text-button" type="button" onClick={onBack}>← More</button>
+      <h1>{title}</h1>
+    </section>
+  );
+}
+
+function BackupPanel({ exportData, importData }) {
+  return (
+    <section className="panel">
+      <div className="panel-title">Coach Backup</div>
+      <div className="panel-sub">Save the editable week, players, results, and preferences</div>
+      <div className="button-row">
+        <button className="ghost-btn gold" type="button" onClick={exportData}>Export JSON</button>
+        <label className="ghost-btn">
+          Import JSON
+          <input
+            type="file"
+            accept="application/json,.json"
+            hidden
+            onChange={(event) => {
+              importData(event.target.files[0]);
+              event.target.value = "";
+            }}
+          />
+        </label>
+      </div>
+    </section>
   );
 }
 

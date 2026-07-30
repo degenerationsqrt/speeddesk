@@ -1,5 +1,9 @@
-const SHARE_VERSION = 2;
-const MAX_SHARE_TOKEN_LENGTH = 2000;
+import LZString from "lz-string";
+
+const SHARE_VERSION = 3;
+const LEGACY_SHARE_VERSION = 2;
+const MAX_SHARE_TOKEN_LENGTH = 12000;
+const { compressToEncodedURIComponent, decompressFromEncodedURIComponent } = LZString;
 
 function cleanText(value, fallback = "") {
   const text = String(value || "").trim();
@@ -56,21 +60,6 @@ function normalizeReadiness(value) {
   return Math.min(5, Math.max(1, Math.round(readiness)));
 }
 
-function toBase64Url(value) {
-  const bytes = new TextEncoder().encode(value);
-  let binary = "";
-  const chunkSize = 0x8000;
-
-  for (let index = 0; index < bytes.length; index += chunkSize) {
-    binary += String.fromCharCode(...bytes.subarray(index, index + chunkSize));
-  }
-
-  return btoa(binary)
-    .replace(/\+/g, "-")
-    .replace(/\//g, "_")
-    .replace(/=+$/g, "");
-}
-
 function fromBase64Url(value) {
   const base64 = value
     .replace(/-/g, "+")
@@ -86,8 +75,14 @@ export function createWorkoutSharePayload({
   coachLabel,
   audienceName = "",
   readiness = 4,
+  dailyRoutines = [],
+  selectedDay = "",
   sharedAt = new Date().toISOString(),
 }) {
+  const routines = (Array.isArray(dailyRoutines) ? dailyRoutines : [])
+    .slice(0, 7)
+    .map(normalizeRoutine);
+
   return {
     version: SHARE_VERSION,
     team: {
@@ -96,6 +91,8 @@ export function createWorkoutSharePayload({
     },
     assignmentTarget: normalizeAudience(audienceName),
     readiness: normalizeReadiness(readiness),
+    selectedDay: cleanText(selectedDay, routines[0]?.day),
+    dailyRoutines: routines,
     syncedAt: cleanText(sharedAt, new Date().toISOString()),
   };
 }
@@ -106,6 +103,7 @@ export function createWorkoutShareSnapshot({
   audienceName = "",
   dailyRoutines = [],
   activeRoutine = null,
+  selectedDay = "",
   sharedAt = new Date().toISOString(),
 }) {
   const sourceRoutines = Array.isArray(dailyRoutines) && dailyRoutines.length
@@ -113,7 +111,9 @@ export function createWorkoutShareSnapshot({
     : activeRoutine
       ? [activeRoutine]
       : [];
-  const routines = sourceRoutines.slice(0, 14).map(normalizeRoutine);
+  const routines = sourceRoutines.slice(0, 7).map(normalizeRoutine);
+  const chosenDay = cleanText(selectedDay, activeRoutine?.day || routines[0]?.day);
+  const chosenRoutine = routines.find((routine) => routine.day === chosenDay) || routines[0] || null;
 
   return {
     version: SHARE_VERSION,
@@ -124,7 +124,8 @@ export function createWorkoutShareSnapshot({
       coachLabel: cleanText(coachLabel, "Coach"),
     },
     assignmentTarget: normalizeAudience(audienceName),
-    activeRoutine: routines[0] || null,
+    selectedDay: chosenDay,
+    activeRoutine: chosenRoutine,
     dailyRoutines: routines,
     sessions: [],
     syncedAt: sharedAt,
@@ -132,10 +133,12 @@ export function createWorkoutShareSnapshot({
 }
 
 export function encodeWorkoutShare(payload) {
-  if (payload?.version !== SHARE_VERSION || !payload?.team?.name) {
-    throw new Error("The workout link could not be created.");
+  if (payload?.version !== SHARE_VERSION || !payload?.team?.name || !payload?.dailyRoutines?.length) {
+    throw new Error("Choose or build a workout before sharing.");
   }
-  return toBase64Url(JSON.stringify(payload));
+  const compressed = compressToEncodedURIComponent(JSON.stringify(payload));
+  if (!compressed) throw new Error("The workout link could not be created.");
+  return `v${SHARE_VERSION}.${compressed}`;
 }
 
 export function decodeWorkoutShare(token) {
@@ -145,20 +148,43 @@ export function decodeWorkoutShare(token) {
   }
 
   try {
-    const parsed = JSON.parse(fromBase64Url(value));
-    if (parsed?.version !== SHARE_VERSION || !parsed?.team?.name) {
-      throw new Error("Unsupported workout link.");
+    if (value.startsWith(`v${SHARE_VERSION}.`)) {
+      const json = decompressFromEncodedURIComponent(value.slice(3));
+      const parsed = JSON.parse(json);
+      if (parsed?.version !== SHARE_VERSION || !parsed?.team?.name || !parsed?.dailyRoutines?.length) {
+        throw new Error("Unsupported workout link.");
+      }
+      return createWorkoutSharePayload({
+        teamName: parsed.team.name,
+        coachLabel: parsed.team.coachLabel,
+        audienceName: parsed.assignmentTarget?.type === "group"
+          ? parsed.assignmentTarget.name
+          : "all",
+        readiness: parsed.readiness,
+        dailyRoutines: parsed.dailyRoutines,
+        selectedDay: parsed.selectedDay,
+        sharedAt: parsed.syncedAt,
+      });
     }
 
-    return createWorkoutSharePayload({
-      teamName: parsed.team.name,
-      coachLabel: parsed.team.coachLabel,
-      audienceName: parsed.assignmentTarget?.type === "group"
-        ? parsed.assignmentTarget.name
-        : "all",
-      readiness: parsed.readiness,
-      sharedAt: parsed.syncedAt,
-    });
+    const legacy = JSON.parse(fromBase64Url(value));
+    if (legacy?.version !== LEGACY_SHARE_VERSION || !legacy?.team?.name) {
+      throw new Error("Unsupported workout link.");
+    }
+    return {
+      version: LEGACY_SHARE_VERSION,
+      team: {
+        name: cleanText(legacy.team.name, "SpeedDesk Team"),
+        coachLabel: cleanText(legacy.team.coachLabel, "Coach"),
+      },
+      assignmentTarget: normalizeAudience(
+        legacy.assignmentTarget?.type === "group" ? legacy.assignmentTarget.name : "all"
+      ),
+      readiness: normalizeReadiness(legacy.readiness),
+      selectedDay: "",
+      dailyRoutines: [],
+      syncedAt: cleanText(legacy.syncedAt, new Date().toISOString()),
+    };
   } catch (error) {
     if (error?.message === "Unsupported workout link.") throw error;
     throw new Error("This workout link is damaged. Ask the coach to share it again.");
