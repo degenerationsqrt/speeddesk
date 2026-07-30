@@ -235,7 +235,9 @@ export default function AthletePortal({ inviteCode, sharedSnapshot = null, share
   );
   const [notificationPermission, setNotificationPermission] = useState(notificationSupport);
   const [progress, setProgress] = useState(emptyProgress);
-  const [selectedDay, setSelectedDay] = useState(currentDayName);
+  const [selectedDay, setSelectedDay] = useState(
+    sharedSnapshot?.selectedDay || currentDayName
+  );
   const [syncState, setSyncState] = useState("local");
   const [finishOpen, setFinishOpen] = useState(false);
   const [finishEffort, setFinishEffort] = useState(null);

@@ -588,6 +588,603 @@ textarea {
   padding: 9px;
 }
 
+/* Condensed coach planner */
+.select {
+  background: #182019;
+  border: 1px solid #253128;
+  border-radius: 8px;
+  color: #f8fafc;
+  outline: none;
+  padding: 10px 11px;
+  width: 100%;
+}
+
+.select:focus {
+  border-color: #38bdf8;
+}
+
+.tabs .tab {
+  flex: 1 1 0;
+  text-align: center;
+}
+
+.planner-shell h1,
+.planner-shell h2,
+.condensed-hub-head h1,
+.more-hub h1,
+.hub-back h1 {
+  font-family: Oswald, Impact, sans-serif;
+  line-height: 1.05;
+  margin: 4px 0 8px;
+  text-transform: uppercase;
+}
+
+.planner-shell h1 {
+  font-size: clamp(28px, 5vw, 44px);
+}
+
+.planner-shell h2,
+.condensed-hub-head h1,
+.more-hub h1,
+.hub-back h1 {
+  font-size: 26px;
+}
+
+.planner-shell p,
+.condensed-hub-head p,
+.more-hub p {
+  color: #9aa69f;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.planner-kicker {
+  color: #f6c453;
+  font-family: Oswald, Impact, sans-serif;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.planner-hero {
+  background:
+    radial-gradient(circle at right top, rgba(249, 115, 22, 0.15), transparent 44%),
+    rgba(18, 23, 19, 0.96);
+}
+
+.planner-title-row {
+  align-items: start;
+  display: grid;
+  gap: 18px;
+  grid-template-columns: 1fr minmax(180px, 240px);
+}
+
+.planner-readiness {
+  background: rgba(11, 15, 13, 0.72);
+  border: 1px solid #344238;
+  border-radius: 10px;
+  display: grid;
+  gap: 5px;
+  padding: 12px;
+}
+
+.planner-readiness span {
+  color: #9aa69f;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.planner-readiness strong {
+  color: #22c55e;
+  font-family: Oswald, Impact, sans-serif;
+  font-size: 24px;
+}
+
+.planner-readiness input {
+  accent-color: #22c55e;
+  width: 100%;
+}
+
+.week-board {
+  display: grid;
+  gap: 9px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin-top: 18px;
+}
+
+.week-day-card {
+  background: #171e19;
+  border: 1px solid #344238;
+  border-radius: 10px;
+  color: #f8fafc;
+  cursor: pointer;
+  display: grid;
+  gap: 5px;
+  min-height: 104px;
+  padding: 12px;
+  text-align: left;
+}
+
+.week-day-card span {
+  color: #f6c453;
+  font-family: Oswald, Impact, sans-serif;
+  font-size: 13px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.week-day-card strong {
+  font-size: 14px;
+  line-height: 1.25;
+}
+
+.week-day-card small {
+  color: #9aa69f;
+  font-size: 11px;
+}
+
+.week-day-card.active {
+  background: linear-gradient(145deg, rgba(31, 122, 77, 0.42), rgba(23, 30, 25, 0.96));
+  border-color: #22c55e;
+  box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.2);
+}
+
+.selected-workout-head {
+  align-items: start;
+  display: flex;
+  gap: 16px;
+  justify-content: space-between;
+}
+
+.selected-workout-head > div:first-child {
+  max-width: 720px;
+}
+
+.workout-duration-badge {
+  align-content: center;
+  background: #f8fafc;
+  border-radius: 10px;
+  color: #0b0f0d;
+  display: grid;
+  flex: 0 0 104px;
+  justify-items: center;
+  min-height: 78px;
+}
+
+.workout-duration-badge strong {
+  font-family: Oswald, Impact, sans-serif;
+  font-size: 34px;
+  line-height: 1;
+}
+
+.workout-duration-badge span {
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.planner-actions {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin: 18px 0 14px;
+}
+
+.planner-actions button,
+.scope-switcher button,
+.secondary-tabs button,
+.custom-block-actions button {
+  background: #182019;
+  border: 1px solid #344238;
+  border-radius: 8px;
+  color: #d6ded9;
+  cursor: pointer;
+  font-weight: 800;
+  padding: 10px;
+}
+
+.planner-actions button.active,
+.scope-switcher button.active,
+.secondary-tabs button.active {
+  background: rgba(31, 122, 77, 0.32);
+  border-color: #22c55e;
+  color: #fff;
+}
+
+.selected-blocks {
+  display: grid;
+  gap: 7px;
+}
+
+.selected-block {
+  align-items: center;
+  background: #151b17;
+  border: 1px solid #29352d;
+  border-radius: 9px;
+  display: grid;
+  gap: 10px;
+  grid-template-columns: 34px 1fr auto;
+  padding: 10px;
+}
+
+.selected-block > span,
+.custom-block-number {
+  align-items: center;
+  background: rgba(246, 196, 83, 0.12);
+  border: 1px solid rgba(246, 196, 83, 0.42);
+  border-radius: 8px;
+  color: #f6c453;
+  display: flex;
+  font-weight: 900;
+  height: 32px;
+  justify-content: center;
+  width: 32px;
+}
+
+.selected-block div {
+  display: grid;
+  gap: 3px;
+}
+
+.selected-block small {
+  color: #9aa69f;
+}
+
+.selected-block em {
+  color: #22c55e;
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.copy-day-row {
+  align-items: end;
+  border-top: 1px solid #29352d;
+  display: grid;
+  gap: 10px;
+  grid-template-columns: 1fr auto;
+  margin-top: 14px;
+  padding-top: 14px;
+}
+
+.copy-day-row label {
+  display: grid;
+  gap: 6px;
+}
+
+.copy-day-row label span {
+  color: #9aa69f;
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.copy-day-row select {
+  background: #182019;
+  border: 1px solid #344238;
+  border-radius: 8px;
+  color: #f8fafc;
+  padding: 10px;
+}
+
+.copy-day-row .ghost-btn {
+  min-width: 180px;
+}
+
+.picker-heading,
+.preset-card-head,
+.share-summary,
+.condensed-hub-head {
+  align-items: start;
+  display: flex;
+  gap: 16px;
+  justify-content: space-between;
+}
+
+.picker-filters {
+  display: grid;
+  gap: 9px;
+  grid-template-columns: 1fr 220px;
+  margin: 14px 0;
+}
+
+.preset-grid {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  max-height: 620px;
+  overflow-y: auto;
+}
+
+.preset-card {
+  background: #151b17;
+  border: 1px solid #29352d;
+  border-radius: 10px;
+  content-visibility: auto;
+  display: grid;
+  gap: 8px;
+  padding: 13px;
+}
+
+.preset-card h3 {
+  font-size: 17px;
+  margin: 0;
+}
+
+.preset-card p {
+  font-size: 12px;
+}
+
+.preset-card-head span,
+.preset-card > small {
+  color: #9aa69f;
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.preset-card-head strong {
+  color: #f6c453;
+  font-size: 12px;
+}
+
+.preset-card > button {
+  background: rgba(249, 115, 22, 0.12);
+  border: 1px solid #f97316;
+  border-radius: 8px;
+  color: #fed7aa;
+  cursor: pointer;
+  font-weight: 900;
+  margin-top: auto;
+  padding: 9px;
+}
+
+.custom-block-list {
+  display: grid;
+  gap: 9px;
+  margin-top: 14px;
+}
+
+.custom-block-row {
+  align-items: start;
+  background: #151b17;
+  border: 1px solid #29352d;
+  border-radius: 10px;
+  display: grid;
+  gap: 10px;
+  grid-template-columns: 34px 1fr auto;
+  padding: 10px;
+}
+
+.custom-block-fields {
+  display: grid;
+  gap: 7px;
+  grid-template-columns: 1.1fr 1fr 1fr;
+}
+
+.custom-block-actions {
+  display: grid;
+  gap: 5px;
+  grid-template-columns: repeat(3, 34px);
+}
+
+.custom-block-actions button {
+  min-height: 34px;
+  padding: 3px;
+}
+
+.custom-block-actions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.35;
+}
+
+.builder-footer {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: 1fr 2fr;
+  margin-top: 14px;
+}
+
+.builder-footer .save-btn {
+  margin-top: 0;
+}
+
+.planner-share-panel {
+  border-color: rgba(34, 197, 94, 0.42);
+}
+
+.share-choice-grid {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: 1fr 1fr;
+  margin-top: 14px;
+}
+
+.scope-switcher {
+  display: grid;
+  gap: 6px;
+  grid-template-columns: 1fr 1fr;
+}
+
+.share-summary {
+  background: #151b17;
+  border: 1px solid #29352d;
+  border-radius: 9px;
+  margin-top: 12px;
+  padding: 11px;
+}
+
+.share-summary span {
+  color: #9aa69f;
+  font-size: 12px;
+}
+
+.share-settings {
+  border-top: 1px solid #29352d;
+  margin-top: 14px;
+  padding-top: 12px;
+}
+
+.share-settings summary {
+  color: #9aa69f;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.share-settings .form-grid {
+  margin-top: 12px;
+}
+
+.condensed-hub-head,
+.more-hub {
+  background:
+    radial-gradient(circle at right top, rgba(31, 122, 77, 0.17), transparent 45%),
+    rgba(18, 23, 19, 0.96);
+}
+
+.secondary-tabs {
+  display: flex;
+  gap: 6px;
+}
+
+.more-card-grid {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-top: 18px;
+}
+
+.more-card-grid button {
+  background: #151b17;
+  border: 1px solid #344238;
+  border-radius: 10px;
+  color: #f8fafc;
+  cursor: pointer;
+  display: grid;
+  gap: 7px;
+  min-height: 120px;
+  padding: 15px;
+  text-align: left;
+}
+
+.more-card-grid span {
+  color: #f6c453;
+  font-family: Oswald, Impact, sans-serif;
+  font-size: 18px;
+  text-transform: uppercase;
+}
+
+.more-card-grid strong {
+  color: #9aa69f;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.hub-back {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+}
+
+.hub-back h1 {
+  margin: 0;
+}
+
+@media (max-width: 760px) {
+  .planner-title-row,
+  .picker-filters,
+  .share-choice-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .week-board {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .preset-grid {
+    grid-template-columns: 1fr;
+    max-height: none;
+  }
+
+  .custom-block-fields,
+  .more-card-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .custom-block-row {
+    grid-template-columns: 34px 1fr;
+  }
+
+  .custom-block-actions {
+    grid-column: 2;
+    justify-content: start;
+  }
+
+  .condensed-hub-head {
+    align-items: stretch;
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 520px) {
+  .topbar {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  .tabs {
+    gap: 0;
+  }
+
+  .tab {
+    font-size: 12px;
+    padding-left: 6px;
+    padding-right: 6px;
+  }
+
+  .planner-actions,
+  .builder-footer,
+  .copy-day-row {
+    grid-template-columns: 1fr;
+  }
+
+  .selected-workout-head {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .workout-duration-badge {
+    align-content: center;
+    display: flex;
+    flex-basis: auto;
+    gap: 7px;
+    justify-content: center;
+    min-height: 54px;
+  }
+
+  .copy-day-row .ghost-btn {
+    min-width: 0;
+  }
+
+  .selected-block {
+    align-items: start;
+    grid-template-columns: 34px 1fr;
+  }
+
+  .selected-block em {
+    grid-column: 2;
+  }
+
+  .secondary-tabs {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
 .simple-share-note {
   font-size: 13px;
   margin-top: 12px;

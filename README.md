@@ -5,9 +5,8 @@ Apex Predator Elite is a GitHub Pages-ready React app for speed, agility, plyome
 ## Current Features
 
 - Player roster with emails, groups, status, and notes.
-- Program builder for reusable individual, group, or squad workouts.
-- Calendar scheduling for players, groups, or the whole squad.
-- One-tap workout links for the full team or a selected group.
+- One-screen weekly planner with preset workouts, custom workout building, and rest days.
+- Per-day or full-week workout links for the full team or a selected group.
 - No-login player view with local workout checkmarks, effort, and pain notes.
 - Native phone sharing plus copy-link and player-preview controls.
 - Email draft generation for scheduled sessions with location and workout details.
@@ -38,10 +37,10 @@ The standard player-sharing flow does not use Supabase, email, accounts, approva
 
 Coach flow:
 
-1. Open **Sync**.
-2. Choose **All players** or a group.
-3. Review the seven-day plan.
-4. Tap **Share Workout**, then send the link by text, email, or another phone app.
+1. Open **Plan** and choose a day.
+2. Assign a designed preset, build a custom workout from drills, copy another day, or set a rest day.
+3. Choose **All players** or a group.
+4. Share the selected day, or switch to the full week, then send the link by text, email, or another phone app.
 
 Player flow:
 
@@ -49,7 +48,7 @@ Player flow:
 2. The assigned plan opens immediately.
 3. Tap **Start Workout**, check each step, then tap **Finish Workout**.
 
-The short link contains only the team label, coach label, selected group label, and readiness level. SpeedDesk uses those settings to open the current seven-day plan; it does not include player names, emails, coach notes, schedules, or private roster data. Player checkmarks and completion stay on that device, so the simple sharing flow continues to work without a database.
+The self-contained link contains the assigned workout steps plus the team, coach, group, and readiness labels. It does not include player names, emails, coach notes, schedules, or private roster data. A selected-day link is the compact default; a full-week link is longer because it carries all seven workouts. Player checkmarks and completion stay on that device, so the simple sharing flow continues to work without a database.
 
 The Supabase schema and account APIs remain in the repository for future optional roster and coach-verification features, but they are not required for sharing workouts. Never put a Supabase service-role or secret key in a `VITE_` variable.
 
