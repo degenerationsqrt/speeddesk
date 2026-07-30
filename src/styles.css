@@ -588,6 +588,32 @@ textarea {
   padding: 9px;
 }
 
+.simple-share-note {
+  font-size: 13px;
+  margin-top: 12px;
+}
+
+.simple-share-result {
+  display: grid;
+  gap: 4px;
+  padding: 12px;
+}
+
+.simple-share-result strong {
+  color: #f8fafc;
+  font-size: 14px;
+}
+
+.simple-share-result span,
+.simple-share-result small {
+  line-height: 1.45;
+}
+
+.simple-share-result.error {
+  border-color: rgba(244, 63, 94, 0.55);
+  color: #fecdd3;
+}
+
 .sync-status-row,
 .sync-actions,
 .sync-row {

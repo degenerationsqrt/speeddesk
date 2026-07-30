@@ -198,10 +198,18 @@ async function showRoutineNotification(routine) {
   new Notification(title, options);
 }
 
-export default function AthletePortal({ inviteCode }) {
+export default function AthletePortal({ inviteCode, sharedSnapshot = null, shareError = "" }) {
   const setup = getSupabaseSetupState();
-  const [status, setStatus] = useState(setup.isConfigured ? "loading" : "setup");
-  const [message, setMessage] = useState(setup.isConfigured ? "Getting today ready..." : "Team Sync is not set up yet.");
+  const sharedMode = Boolean(sharedSnapshot);
+  const sharedGroupName = sharedSnapshot?.assignmentTarget?.type === "group"
+    ? sharedSnapshot.assignmentTarget.name
+    : "";
+  const [status, setStatus] = useState(
+    shareError ? "share-error" : sharedMode ? "ready" : setup.isConfigured ? "loading" : "setup"
+  );
+  const [message, setMessage] = useState(
+    shareError ? "" : sharedMode ? "" : setup.isConfigured ? "Getting today ready..." : "Team Sync is not set up yet."
+  );
   const [session, setSession] = useState(null);
   const [accessCode, setAccessCode] = useState(String(inviteCode || "").trim().toUpperCase());
   const [email, setEmail] = useState("");
@@ -210,10 +218,21 @@ export default function AthletePortal({ inviteCode }) {
   const [accountType, setAccountType] = useState("player");
   const [guardianConsent, setGuardianConsent] = useState(false);
   const [accountBusy, setAccountBusy] = useState(false);
-  const [snapshot, setSnapshot] = useState(null);
-  const [team, setTeam] = useState(null);
-  const [athlete, setAthlete] = useState(null);
-  const [groups, setGroups] = useState([]);
+  const [snapshot, setSnapshot] = useState(sharedSnapshot);
+  const [team, setTeam] = useState(sharedSnapshot?.team || null);
+  const [athlete, setAthlete] = useState(
+    sharedMode
+      ? {
+          id: "shared-player",
+          team_id: sharedSnapshot?.team?.id || "shared-workout",
+          source_key: "shared-player",
+          display_name: "Player",
+        }
+      : null
+  );
+  const [groups, setGroups] = useState(
+    sharedGroupName ? [{ id: "shared-group", name: sharedGroupName }] : []
+  );
   const [notificationPermission, setNotificationPermission] = useState(notificationSupport);
   const [progress, setProgress] = useState(emptyProgress);
   const [selectedDay, setSelectedDay] = useState(currentDayName);
@@ -225,7 +244,7 @@ export default function AthletePortal({ inviteCode }) {
   const syncTimer = useRef(null);
 
   const loadContext = useCallback(async ({ notify = false } = {}) => {
-    if (!setup.isConfigured) return;
+    if (sharedMode || shareError || !setup.isConfigured) return;
 
     try {
       const authSession = await getAuthSession();
@@ -278,10 +297,10 @@ export default function AthletePortal({ inviteCode }) {
       setStatus("error");
       setMessage(error.message || "SpeedDesk could not load this account.");
     }
-  }, [setup.isConfigured]);
+  }, [shareError, sharedMode, setup.isConfigured]);
 
   useEffect(() => {
-    if (!setup.isConfigured) return undefined;
+    if (sharedMode || shareError || !setup.isConfigured) return undefined;
     let mounted = true;
     let stopAuth = () => {};
 
@@ -304,7 +323,7 @@ export default function AthletePortal({ inviteCode }) {
       window.clearInterval(poll);
       window.removeEventListener("online", handleOnline);
     };
-  }, [loadContext, setup.isConfigured]);
+  }, [loadContext, shareError, sharedMode, setup.isConfigured]);
 
   const sessions = useMemo(() => {
     const groupNames = new Set(groups.map((group) => group.name));
@@ -349,6 +368,11 @@ export default function AthletePortal({ inviteCode }) {
     setFinishEffort(local.effort);
     setFinishPain(local.pain ?? 0);
 
+    if (sharedMode) {
+      setSyncState("local");
+      return undefined;
+    }
+
     loadWorkoutAttempt({
       athleteId: athlete.id,
       workoutKey: routineId,
@@ -377,7 +401,7 @@ export default function AthletePortal({ inviteCode }) {
     return () => {
       cancelled = true;
     };
-  }, [activeRoutine, athlete, progressKey, routineId]);
+  }, [activeRoutine, athlete, progressKey, routineId, sharedMode]);
 
   const attemptPayload = (nextProgress, syncSource = "web") => {
     const startedAt = nextProgress.startedAt || new Date().toISOString();
@@ -406,6 +430,10 @@ export default function AthletePortal({ inviteCode }) {
 
   const syncProgress = async (nextProgress, immediate = false) => {
     if (!athlete || !activeRoutine || !nextProgress.started) return;
+    if (sharedMode) {
+      setSyncState("local");
+      return;
+    }
     const payload = attemptPayload(nextProgress);
     setSyncState("syncing");
 
@@ -474,7 +502,13 @@ export default function AthletePortal({ inviteCode }) {
     };
     updateProgress(next, true);
     setFinishOpen(false);
-    setMessage(finishPain > 0 ? "Saved. Your coach can see that something hurt." : "Workout saved. Nice work.");
+    setMessage(
+      sharedMode
+        ? "Workout saved on this device. Nice work."
+        : finishPain > 0
+          ? "Saved. Your coach can see that something hurt."
+          : "Workout saved. Nice work."
+    );
   };
 
   const resetWorkout = () => {
@@ -582,7 +616,9 @@ export default function AthletePortal({ inviteCode }) {
     setMessage("");
   };
 
-  const syncLabel = syncState === "synced"
+  const syncLabel = sharedMode
+    ? "No sign-in needed"
+    : syncState === "synced"
     ? "Synced"
     : syncState === "syncing"
       ? "Saving"
@@ -605,6 +641,13 @@ export default function AthletePortal({ inviteCode }) {
 
       <main className="player-content">
         {message && <div className="player-message">{message}</div>}
+
+        {status === "share-error" && (
+          <PlayerAccessCard eyebrow="New link needed" title="Workout link could not open">
+            <p>{shareError || "Ask your coach to share the workout link again."}</p>
+            <small>No player code or sign-in is required with the new workout link.</small>
+          </PlayerAccessCard>
+        )}
 
         {status === "setup" && (
           <PlayerEmpty
@@ -913,10 +956,16 @@ export default function AthletePortal({ inviteCode }) {
             <section className="player-card player-setup-card">
               <div>
                 <div className="player-eyebrow">Updates</div>
-                <h2>Your work saves to coach</h2>
-                <p>
-                  Plan synced {formatSyncTime(snapshot?.syncedAt)}. A watch is optional; Apple, Samsung, and Strava connections can be added without changing this simple flow.
-                </p>
+                <h2>{sharedMode ? "Progress stays on this device" : "Your work saves to coach"}</h2>
+                {sharedMode ? (
+                  <p>
+                    No account is needed. Keep this workout link; checkmarks and completion stay on this phone.
+                  </p>
+                ) : (
+                  <p>
+                    Plan synced {formatSyncTime(snapshot?.syncedAt)}. A watch is optional; Apple, Samsung, and Strava connections can be added without changing this simple flow.
+                  </p>
+                )}
               </div>
               <button className="player-secondary" type="button" onClick={requestNotifications}>
                 {notificationPermission === "granted" ? "Alerts On" : notificationPermission === "denied" ? "Alerts Blocked" : "Turn On Alerts"}
@@ -933,9 +982,11 @@ export default function AthletePortal({ inviteCode }) {
               <SimpleSchedule sessions={todaysSessions.length ? todaysSessions : upcomingSessions} />
             </section>
 
-            <button className="player-signout text-button" type="button" onClick={leaveAccount}>
-              Sign out this device
-            </button>
+            {!sharedMode && (
+              <button className="player-signout text-button" type="button" onClick={leaveAccount}>
+                Sign out this device
+              </button>
+            )}
           </>
         )}
       </main>
