@@ -5,11 +5,13 @@ import {
   loadWorkoutAttempt,
   saveWorkoutAttempt,
   sendSignInLink,
+  signInPlayerAnonymously,
   signOut,
   submitJoinRequest,
   subscribeToAuth,
 } from "../api/teamAccount";
 import { getSupabaseSetupState } from "../api/supabaseConfig";
+import { snapshotForPlayer } from "../sync/workoutAssignments";
 
 const POLL_MS = 20000;
 const PROGRESS_KEY_PREFIX = "speeddesk:player-progress";
@@ -201,7 +203,9 @@ export default function AthletePortal({ inviteCode }) {
   const [status, setStatus] = useState(setup.isConfigured ? "loading" : "setup");
   const [message, setMessage] = useState(setup.isConfigured ? "Getting today ready..." : "Team Sync is not set up yet.");
   const [session, setSession] = useState(null);
+  const [accessCode, setAccessCode] = useState(String(inviteCode || "").trim().toUpperCase());
   const [email, setEmail] = useState("");
+  const [emailMode, setEmailMode] = useState(false);
   const [playerName, setPlayerName] = useState("");
   const [accountType, setAccountType] = useState("player");
   const [guardianConsent, setGuardianConsent] = useState(false);
@@ -246,18 +250,22 @@ export default function AthletePortal({ inviteCode }) {
         return;
       }
 
-      const nextKey = routineKey(context.snapshot);
+      const playerSnapshot = snapshotForPlayer(
+        context.snapshot,
+        (context.groups || []).map((group) => group.name)
+      );
+      const nextKey = routineKey(playerSnapshot);
       const previousKey = lastRoutineKey.current;
       setAthlete(context.athlete);
       setTeam(context.team);
       setGroups(context.groups || []);
-      setSnapshot(context.snapshot);
+      setSnapshot(playerSnapshot);
       setStatus("ready");
       setMessage("");
 
       if (notify && previousKey && nextKey && nextKey !== previousKey) {
         setMessage("Coach updated your workout.");
-        showRoutineNotification(routineForDay(context.snapshot));
+        showRoutineNotification(routineForDay(playerSnapshot));
       }
       lastRoutineKey.current = nextKey;
 
@@ -513,7 +521,39 @@ export default function AthletePortal({ inviteCode }) {
     }
   };
 
+  const enterWithPlayerCode = async () => {
+    if (!accessCode.trim()) {
+      setMessage("Enter the player code from your coach.");
+      return;
+    }
+    if (!playerName.trim()) {
+      setMessage("Enter the player name.");
+      return;
+    }
+
+    setAccountBusy(true);
+    setMessage("Opening your team...");
+    try {
+      const currentSession = await getAuthSession();
+      if (!currentSession) await signInPlayerAnonymously();
+      await submitJoinRequest({
+        inviteCode: accessCode,
+        playerName,
+        accountType: "player",
+      });
+      await loadContext();
+    } catch (error) {
+      setMessage(error.message || "That player code could not be used.");
+    } finally {
+      setAccountBusy(false);
+    }
+  };
+
   const joinTeam = async () => {
+    if (!accessCode.trim()) {
+      setMessage("Enter the player code from your coach.");
+      return;
+    }
     if (!playerName.trim()) {
       setMessage("Enter the player name.");
       return;
@@ -524,7 +564,7 @@ export default function AthletePortal({ inviteCode }) {
     }
     setAccountBusy(true);
     try {
-      await submitJoinRequest({ inviteCode, playerName, accountType });
+      await submitJoinRequest({ inviteCode: accessCode, playerName, accountType });
       await loadContext();
     } catch (error) {
       setMessage(error.message || "This invitation could not be used.");
@@ -578,28 +618,71 @@ export default function AthletePortal({ inviteCode }) {
         )}
 
         {status === "auth" && (
-          <PlayerAccessCard eyebrow="Team invitation" title="Sign in once">
-            <p>Use the player or parent email. After this, SpeedDesk keeps you signed in.</p>
-            <label className="player-field">
-              <span>Email</span>
-              <input
-                className="input"
-                type="email"
-                value={email}
-                onChange={(event) => setEmail(event.target.value)}
-                placeholder="player-or-parent@email.com"
-                autoComplete="email"
-              />
-            </label>
-            <button className="player-primary" type="button" onClick={emailSignIn} disabled={accountBusy}>
-              {accountBusy ? "Sending..." : "Email My Sign-In Link"}
-            </button>
-            <small>A parent should use their email for younger players.</small>
+          <PlayerAccessCard eyebrow="Player access" title={emailMode ? "Use email instead" : "Enter your player code"}>
+            {emailMode ? (
+              <>
+                <p>Use a player or parent email when you want an account that can move between devices.</p>
+                <label className="player-field">
+                  <span>Email</span>
+                  <input
+                    className="input"
+                    type="email"
+                    value={email}
+                    onChange={(event) => setEmail(event.target.value)}
+                    placeholder="player-or-parent@email.com"
+                    autoComplete="email"
+                  />
+                </label>
+                <button className="player-primary" type="button" onClick={emailSignIn} disabled={accountBusy}>
+                  {accountBusy ? "Sending..." : "Email My Sign-In Link"}
+                </button>
+                <button className="text-button" type="button" onClick={() => setEmailMode(false)}>Use player code</button>
+              </>
+            ) : (
+              <>
+                <p>Enter the code from your coach and the player name. No email or password is needed.</p>
+                <label className="player-field">
+                  <span>Player code</span>
+                  <input
+                    className="input player-code-input"
+                    value={accessCode}
+                    onChange={(event) => setAccessCode(event.target.value.toUpperCase())}
+                    placeholder="TEAM CODE"
+                    autoComplete="one-time-code"
+                  />
+                </label>
+                <label className="player-field">
+                  <span>Player name</span>
+                  <input
+                    className="input"
+                    value={playerName}
+                    onChange={(event) => setPlayerName(event.target.value)}
+                    placeholder="Player name"
+                    autoComplete="name"
+                  />
+                </label>
+                <button className="player-primary" type="button" onClick={enterWithPlayerCode} disabled={accountBusy}>
+                  {accountBusy ? "Opening..." : "Enter SpeedDesk"}
+                </button>
+                <small>This access stays on this device. A parent can help younger players enter the code.</small>
+                <button className="text-button" type="button" onClick={() => setEmailMode(true)}>Use email for multiple devices</button>
+              </>
+            )}
           </PlayerAccessCard>
         )}
 
         {status === "join" && session && (
           <PlayerAccessCard eyebrow="Almost there" title="Who is training?">
+            <label className="player-field">
+              <span>Player code</span>
+              <input
+                className="input player-code-input"
+                value={accessCode}
+                onChange={(event) => setAccessCode(event.target.value.toUpperCase())}
+                placeholder="TEAM CODE"
+                autoComplete="one-time-code"
+              />
+            </label>
             <div className="account-choice" role="group" aria-label="Account type">
               <button
                 className={accountType === "player" ? "active" : ""}
@@ -687,7 +770,12 @@ export default function AthletePortal({ inviteCode }) {
             <section className="player-card today-card">
               <div className="player-eyebrow">{selectedIsToday ? "Today" : activeRoutine?.day || "Workout plan"}</div>
               {!activeRoutine ? (
-                <PlayerEmpty title="No workout yet" text="Your coach can add one later." />
+                <PlayerEmpty
+                  title="No workout assigned yet"
+                  text={groups.length
+                    ? `Your coach has not pushed a plan to ${groups.map((group) => group.name).join(", ")} yet.`
+                    : "Your coach can push one from the Sync page."}
+                />
               ) : (
                 <>
                   <div className="today-card-head">

@@ -1,4 +1,5 @@
 import { isSupabaseConfigured } from "./supabaseConfig";
+import { mergeWorkoutAssignment } from "../sync/workoutAssignments";
 
 function requireClient() {
   if (!isSupabaseConfigured) {
@@ -30,11 +31,61 @@ async function currentUser(client) {
   return data.user;
 }
 
+async function findCoachTeam(client, user, preferredTeamId = "") {
+  const { data: ownedTeams, error: ownedError } = await client
+    .from("teams")
+    .select("id,name,coach_label,owner_user_id,created_at")
+    .eq("owner_user_id", user.id)
+    .order("created_at", { ascending: true })
+    .limit(25);
+  if (ownedError) throw ownedError;
+  if (ownedTeams?.length) {
+    return ownedTeams.find((team) => team.id === preferredTeamId) || ownedTeams[0];
+  }
+
+  const { data: staffRows, error: staffError } = await client
+    .from("team_staff")
+    .select("team_id,role,created_at")
+    .eq("user_id", user.id)
+    .in("role", ["owner", "head_coach"])
+    .order("created_at", { ascending: true })
+    .limit(1);
+  if (staffError) throw staffError;
+  if (!staffRows?.[0]?.team_id) return null;
+
+  const { data: staffTeam, error: teamError } = await client
+    .from("teams")
+    .select("id,name,coach_label,owner_user_id,created_at")
+    .eq("id", staffRows[0].team_id)
+    .maybeSingle();
+  if (teamError) throw teamError;
+  return staffTeam || null;
+}
+
 export async function getAuthSession() {
   const client = await requireClient();
   const { data, error } = await client.auth.getSession();
   if (error) throw error;
   return data.session || null;
+}
+
+export async function loadCoachTeam(preferredTeamId = "") {
+  const client = await requireClient();
+  const user = await currentUser(client);
+  const team = await findCoachTeam(client, user, preferredTeamId);
+  if (!team) return null;
+
+  const { data: plan, error } = await client
+    .from("team_plan_snapshots")
+    .select("updated_at")
+    .eq("team_id", team.id)
+    .maybeSingle();
+  if (error) throw error;
+
+  return {
+    ...team,
+    lastSyncedAt: plan?.updated_at || "",
+  };
 }
 
 export async function sendSignInLink(email) {
@@ -51,6 +102,18 @@ export async function sendSignInLink(email) {
     },
   });
   if (error) throw error;
+}
+
+export async function signInPlayerAnonymously() {
+  const client = await requireClient();
+  const { data, error } = await client.auth.signInAnonymously();
+  if (error) {
+    if (/anonymous|disabled|provider/i.test(error.message || "")) {
+      throw new Error("Player code login needs Anonymous Sign-Ins enabled in Supabase Authentication settings.");
+    }
+    throw error;
+  }
+  return data.session || null;
 }
 
 export async function signOut() {
@@ -91,15 +154,18 @@ export async function hashInviteCode(code) {
 }
 
 async function ensureTeamRow(client, user, snapshot) {
+  const existingTeam = await findCoachTeam(client, user, snapshot.team.id);
   const row = {
-    id: snapshot.team.id,
+    id: existingTeam?.id || snapshot.team.id,
     name: normalizeName(snapshot.team.name, "SpeedDesk Team"),
     coach_label: normalizeName(snapshot.team.coachLabel, "Coach"),
-    owner_user_id: user.id,
+    owner_user_id: existingTeam?.owner_user_id || user.id,
   };
 
-  const { error: insertError } = await client.from("teams").insert(row);
-  if (insertError && insertError.code !== "23505") throw insertError;
+  if (!existingTeam) {
+    const { error: insertError } = await client.from("teams").insert(row);
+    if (insertError && insertError.code !== "23505") throw insertError;
+  }
 
   const { error: updateError } = await client
     .from("teams")
@@ -107,12 +173,14 @@ async function ensureTeamRow(client, user, snapshot) {
     .eq("id", row.id);
   if (updateError) throw updateError;
 
-  const { error: staffError } = await client.from("team_staff").insert({
-    team_id: row.id,
-    user_id: user.id,
-    role: "owner",
-  });
-  if (staffError && staffError.code !== "23505") throw staffError;
+  if (row.owner_user_id === user.id) {
+    const { error: staffError } = await client.from("team_staff").insert({
+      team_id: row.id,
+      user_id: user.id,
+      role: "owner",
+    });
+    if (staffError && staffError.code !== "23505") throw staffError;
+  }
 
   return row.id;
 }
@@ -204,43 +272,6 @@ async function syncAthletes(client, teamId, userId, athletes, groupIds) {
   return data || [];
 }
 
-async function ensurePrimaryInvite(client, teamId, userId, inviteCode) {
-  if (!inviteCode) return;
-  const codeHash = await hashInviteCode(inviteCode);
-  const now = isoNow();
-
-  const { error: revokeError } = await client
-    .from("team_invites")
-    .update({ revoked_at: now })
-    .eq("team_id", teamId)
-    .is("group_id", null)
-    .is("revoked_at", null)
-    .neq("code_hash", codeHash);
-  if (revokeError) throw revokeError;
-
-  const { data: existing, error: lookupError } = await client
-    .from("team_invites")
-    .select("id")
-    .eq("code_hash", codeHash)
-    .maybeSingle();
-  if (lookupError) throw lookupError;
-  if (existing) return;
-
-  const expiresAt = new Date();
-  expiresAt.setDate(expiresAt.getDate() + 30);
-  const { error } = await client.from("team_invites").insert({
-    team_id: teamId,
-    code_hash: codeHash,
-    code_hint: String(inviteCode).slice(-4).toUpperCase(),
-    role: "player",
-    auto_approve: false,
-    expires_at: expiresAt.toISOString(),
-    max_uses: 100,
-    created_by: userId,
-  });
-  if (error) throw error;
-}
-
 export async function syncSecureTeam({ snapshot, athletes }) {
   const client = await requireClient();
   const user = await currentUser(client);
@@ -254,14 +285,22 @@ export async function syncSecureTeam({ snapshot, athletes }) {
   const groupIds = await syncGroups(client, teamId, athletes);
   await syncAthletes(client, teamId, user.id, athletes, groupIds);
 
-  const playerPlan = {
+  const canonicalSnapshot = {
     ...snapshot,
     team: {
-      id: snapshot.team.id,
+      id: teamId,
       name: snapshot.team.name,
       coachLabel: snapshot.team.coachLabel,
     },
   };
+  const { data: existingPlan, error: existingPlanError } = await client
+    .from("team_plan_snapshots")
+    .select("payload")
+    .eq("team_id", teamId)
+    .maybeSingle();
+  if (existingPlanError) throw existingPlanError;
+
+  const playerPlan = mergeWorkoutAssignment(existingPlan?.payload || null, canonicalSnapshot);
   const { error: planError } = await client.from("team_plan_snapshots").upsert({
     team_id: teamId,
     payload: playerPlan,
@@ -270,14 +309,14 @@ export async function syncSecureTeam({ snapshot, athletes }) {
   }, { onConflict: "team_id" });
   if (planError) throw planError;
 
-  await ensurePrimaryInvite(client, teamId, user.id, snapshot.team.inviteCode);
-  return snapshot;
+  return canonicalSnapshot;
 }
 
 export async function createTeamInvite({
   teamId,
   code,
   groupName = "",
+  athleteId = null,
   role = "player",
   autoApprove = false,
   expiresInDays = 14,
@@ -306,6 +345,7 @@ export async function createTeamInvite({
     .insert({
       team_id: teamId,
       group_id: groupId,
+      athlete_id: athleteId,
       code_hash: codeHash,
       code_hint: String(code).slice(-4).toUpperCase(),
       role,
@@ -314,7 +354,7 @@ export async function createTeamInvite({
       max_uses: maxUses,
       created_by: user.id,
     })
-    .select("id,team_id,group_id,code_hint,role,expires_at,max_uses,uses,created_at")
+    .select("id,team_id,group_id,athlete_id,code_hint,role,auto_approve,expires_at,max_uses,uses,created_at")
     .single();
   if (error) throw error;
   return data;
