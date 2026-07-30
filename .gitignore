@@ -5,3 +5,4 @@ dist/
 .env
 .env.local
 .env.*.local
+.codex-remote-attachments/

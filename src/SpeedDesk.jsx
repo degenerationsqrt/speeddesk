@@ -1015,8 +1015,10 @@ function buildSessionEmail(event, programs, athletes) {
 }
 
 export default function SpeedDesk() {
-  const inviteCode = new URLSearchParams(window.location.search).get("team");
-  if (inviteCode) {
+  const searchParams = new URLSearchParams(window.location.search);
+  const inviteCode = searchParams.get("team") || "";
+  const playerMode = Boolean(inviteCode) || searchParams.get("player") === "1";
+  if (playerMode) {
     return (
       <Suspense fallback={<AppLoading text="Loading team portal..." />}>
         <AthletePortal inviteCode={inviteCode} />

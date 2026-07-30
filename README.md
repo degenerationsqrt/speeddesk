@@ -7,7 +7,7 @@ Apex Predator Elite is a GitHub Pages-ready React app for speed, agility, plyome
 - Player roster with emails, groups, status, and notes.
 - Program builder for reusable individual, group, or squad workouts.
 - Calendar scheduling for players, groups, or the whole squad.
-- Secure coach and player accounts with team/group invite codes and coach approval.
+- Secure coach accounts plus instant team/group player codes for youth-friendly access.
 - Cloud-synced player workout logs with checked steps, duration, effort, pain, and coach review.
 - Team Sync dashboard for group switching, invitation management, and workout verification.
 - Email draft generation for scheduled sessions with location and workout details.
@@ -38,16 +38,17 @@ Team Sync keeps the coach planner local-first while securely syncing approved pl
 
 1. Create a Supabase project.
 2. Run `supabase/schema.sql` in the Supabase SQL editor.
-3. In Supabase Authentication, enable email sign-in and add the local and production app URLs to the redirect allow list.
-4. Copy `.env.example` to `.env.local`.
-5. Add your public project values:
+3. In Supabase Authentication → Sign In / Providers, enable **Allow anonymous sign-ins** for player-code access.
+4. Keep email sign-in enabled and add the local and production app URLs to the redirect allow list for coach accounts and optional multi-device player accounts.
+5. Copy `.env.example` to `.env.local`.
+6. Add your public project values:
 
 ```text
 VITE_SUPABASE_URL=https://your-project.supabase.co
 VITE_SUPABASE_PUBLISHABLE_KEY=your-public-publishable-key
 ```
 
-6. Deploy the Vite app to Vercel or Netlify and add the same environment variables there.
+7. Deploy the Vite app to Vercel or Netlify and add the same environment variables there.
 
 This repo includes `vercel.json` and `netlify.toml` so either host can build with `npm run build` and publish `dist`.
 
@@ -56,17 +57,19 @@ The schema enables row-level security on every player table. It stores roster id
 Coach flow:
 
 1. Open Team Sync and request a secure email sign-in link.
-2. Sync the team and daily plan.
-3. Create a team or group player code.
-4. Approve each join request.
-5. Switch groups and review workout evidence in the Workout Proof panel.
+2. Choose All Players or one group in **Push Workout & Player Access**.
+3. Review the seven-day plan and push it.
+4. Create the instant player code and share the code or player link.
+5. Switch the oversight group and review workout evidence below.
 
 Player flow:
 
-1. Open the `?team=INVITE_CODE` link or enter through the shared invite.
-2. Sign in with the player or parent email.
-3. Enter the player name and wait for coach approval.
+1. Open the shared `?team=INVITE_CODE` link or the `?player=1` player-login page.
+2. Enter the coach-provided code and player name.
+3. Tap **Enter SpeedDesk** to see the assigned plan immediately.
 4. Tap Start Workout, check each step, then tap Finish Workout.
+
+Code access stays signed in on that device. Players who need the same account on multiple devices can choose the email option instead.
 
 Progress saves locally first and queues if the device is offline. Once connected, it syncs to the coach dashboard. Apple Watch, Samsung Galaxy Watch, and Strava are optional future data sources; the phone/web flow does not require a watch.
 

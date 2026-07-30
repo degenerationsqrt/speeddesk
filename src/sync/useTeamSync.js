@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
-import { buildInviteUrl, buildTeamSnapshot, createInviteCode, createTeamId, upsertTeamSnapshot } from "../api/teamSync";
+import { useCallback, useEffect, useState } from "react";
+import { buildTeamSnapshot, createTeamId, upsertTeamSnapshot } from "../api/teamSync";
 import { getSupabaseSetupState } from "../api/supabaseConfig";
 
 const TEAM_SYNC_STORAGE_KEY = "apex-predator-elite:team-sync";
@@ -9,7 +9,6 @@ function defaultTeam() {
     id: createTeamId(),
     name: "Apex Predator Elite",
     coachLabel: "Coach",
-    inviteCode: createInviteCode(),
     lastSyncedAt: "",
   };
 }
@@ -36,54 +35,69 @@ export function useTeamSync({ athletes, programs, calendarEvents, activeRoutine,
     localStorage.setItem(TEAM_SYNC_STORAGE_KEY, JSON.stringify(team));
   }, [loaded, team]);
 
-  const inviteUrl = useMemo(() => buildInviteUrl(team.inviteCode), [team.inviteCode]);
-
-  const snapshot = useMemo(
-    () => buildTeamSnapshot({ team, athletes, programs, calendarEvents, activeRoutine, dailyRoutines }),
-    [team, athletes, programs, calendarEvents, activeRoutine, dailyRoutines]
-  );
-
   const updateTeam = (patch) => {
     setTeam((current) => ({ ...current, ...patch }));
   };
 
-  const regenerateInvite = () => {
-    setTeam((current) => ({ ...current, inviteCode: createInviteCode() }));
-    setMessage("New invite code created.");
-  };
+  const adoptCloudTeam = useCallback((cloudTeam) => {
+    if (!cloudTeam?.id) return;
+    setTeam((current) => ({
+      ...current,
+      id: cloudTeam.id,
+      name: cloudTeam.name || current.name,
+      coachLabel: cloudTeam.coach_label || cloudTeam.coachLabel || current.coachLabel,
+      lastSyncedAt: cloudTeam.lastSyncedAt || current.lastSyncedAt,
+    }));
+  }, []);
 
-  const syncNow = async () => {
+  const syncNow = async (assignmentTarget = { type: "all", name: "" }) => {
     if (!setup.isConfigured) {
       setStatus("setup");
       setMessage(`Add ${setup.missing.join(" and ")} before cloud sync can run.`);
       onFlash?.("Supabase setup needed");
-      return false;
+      return null;
     }
 
     setStatus("syncing");
-    setMessage("Syncing roster, schedule, and daily workouts...");
+    const targetLabel = assignmentTarget.type === "group" && assignmentTarget.name
+      ? assignmentTarget.name
+      : "all players";
+    setMessage(`Pushing the workout plan to ${targetLabel}...`);
 
     try {
+      const snapshot = buildTeamSnapshot({
+        team,
+        athletes,
+        programs,
+        calendarEvents,
+        activeRoutine,
+        dailyRoutines,
+        assignmentTarget,
+      });
       const synced = await upsertTeamSnapshot(snapshot, athletes);
-      setTeam((current) => ({ ...current, lastSyncedAt: synced.syncedAt }));
+      setTeam((current) => ({
+        ...current,
+        id: synced.team.id,
+        name: synced.team.name || current.name,
+        coachLabel: synced.team.coachLabel || current.coachLabel,
+        lastSyncedAt: synced.syncedAt,
+      }));
       setStatus("synced");
-      setMessage("Daily workout plan synced. Player apps will update on refresh or polling.");
-      onFlash?.("Team synced");
-      return true;
+      setMessage(`Workout plan pushed to ${targetLabel}. Player apps will update within 20 seconds.`);
+      onFlash?.("Workout plan pushed");
+      return synced;
     } catch (error) {
       setStatus("error");
-      setMessage(error.message || "Team sync failed.");
-      onFlash?.("Team sync failed");
-      return false;
+      setMessage(error.message || "Workout plan could not be pushed.");
+      onFlash?.("Workout push failed");
+      return null;
     }
   };
 
   return {
-    inviteUrl,
+    adoptCloudTeam,
     message,
-    regenerateInvite,
     setup,
-    snapshot,
     status,
     syncNow,
     team,

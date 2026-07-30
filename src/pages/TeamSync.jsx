@@ -4,6 +4,7 @@ import {
   decideJoinRequest,
   getAuthSession,
   loadCoachHub,
+  loadCoachTeam,
   reviewWorkout,
   revokeTeamInvite,
   sendSignInLink,
@@ -11,7 +12,7 @@ import {
   subscribeCoachUpdates,
   subscribeToAuth,
 } from "../api/teamAccount";
-import { buildInviteUrl, createInviteCode } from "../api/teamSync";
+import { buildInviteUrl, buildPlayerLoginUrl, createInviteCode } from "../api/teamSync";
 import { useTeamSync } from "../sync/useTeamSync";
 
 const EMPTY_HUB = {
@@ -55,13 +56,18 @@ export default function TeamSync({ athletes, programs, calendarEvents, activeRou
   const [hub, setHub] = useState(EMPTY_HUB);
   const [hubStatus, setHubStatus] = useState("idle");
   const [selectedGroup, setSelectedGroup] = useState("all");
-  const [inviteGroup, setInviteGroup] = useState("");
+  const [assignmentGroup, setAssignmentGroup] = useState("all");
   const [latestInvite, setLatestInvite] = useState(null);
   const activeAthletes = athletes.filter((athlete) => athlete.status !== "Inactive");
   const localGroups = useMemo(() => groupNamesFromRoster(activeAthletes), [activeAthletes]);
   const groups = hub.groups.length ? hub.groups.map((group) => group.name) : localGroups;
   const upcomingSessions = calendarEvents.slice(0, 5);
   const connectionLabel = sync.setup.isConfigured ? (session ? "Coach connected" : "Sign in to connect") : "Setup needed";
+  const assignmentTarget = assignmentGroup === "all"
+    ? { type: "all", name: "" }
+    : { type: "group", name: assignmentGroup };
+  const assignmentLabel = assignmentGroup === "all" ? "All players" : assignmentGroup;
+  const playerLoginUrl = buildPlayerLoginUrl();
 
   const copyText = async (value, success = "Copied") => {
     if (!value) return;
@@ -132,6 +138,21 @@ export default function TeamSync({ athletes, programs, calendarEvents, activeRou
     };
   }, [refreshHub, session, sync.team.id]);
 
+  useEffect(() => {
+    if (!session) return undefined;
+    let active = true;
+    loadCoachTeam(sync.team.id)
+      .then((cloudTeam) => {
+        if (active && cloudTeam) sync.adoptCloudTeam(cloudTeam);
+      })
+      .catch((error) => {
+        if (active) setAccountMessage(error.message || "Your cloud team could not be reopened.");
+      });
+    return () => {
+      active = false;
+    };
+  }, [session, sync.adoptCloudTeam, sync.team.id]);
+
   const sendMagicLink = async (event) => {
     event.preventDefault();
     if (!email.trim()) return;
@@ -159,8 +180,11 @@ export default function TeamSync({ athletes, programs, calendarEvents, activeRou
   };
 
   const syncAndRefresh = async () => {
-    const didSync = await sync.syncNow();
-    if (didSync) await refreshHub();
+    const synced = await sync.syncNow(assignmentTarget);
+    if (!synced) return;
+    const nextHub = await loadCoachHub(synced.team.id);
+    setHub(nextHub);
+    setHubStatus("ready");
   };
 
   const createInvite = async () => {
@@ -171,21 +195,31 @@ export default function TeamSync({ athletes, programs, calendarEvents, activeRou
     setHubStatus("working");
     const code = createInviteCode();
     try {
+      const synced = await sync.syncNow(assignmentTarget);
+      if (!synced) {
+        setHubStatus("error");
+        return;
+      }
       const invitation = await createTeamInvite({
-        teamId: sync.team.id,
+        teamId: synced.team.id,
         code,
-        groupName: inviteGroup,
+        groupName: assignmentGroup === "all" ? "" : assignmentGroup,
+        autoApprove: true,
+        expiresInDays: 30,
+        maxUses: 30,
       });
       setLatestInvite({
         ...invitation,
         code,
-        groupName: inviteGroup || "Any group",
+        groupName: assignmentLabel,
         url: buildInviteUrl(code),
       });
-      await refreshHub({ quiet: true });
-      onFlash?.("Player invite created");
+      const nextHub = await loadCoachHub(synced.team.id);
+      setHub(nextHub);
+      setHubStatus("ready");
+      onFlash?.("Player code ready");
     } catch (error) {
-      setAccountMessage(error.message || "Invite could not be created.");
+      setAccountMessage(error.message || "Player code could not be created.");
       setHubStatus("error");
     }
   };
@@ -288,72 +322,92 @@ export default function TeamSync({ athletes, programs, calendarEvents, activeRou
         {accountMessage && <div className="callout">{accountMessage}</div>}
       </Panel>
 
-      <Panel title="Team Sync" sub="Sync the roster and seven-day plan after signing in">
+      <Panel title="Push Workout & Player Access" sub="Assign the plan, send it, and give players their entry code from one place">
         <div className="sync-status-row">
           <StatusPill tone={sync.setup.isConfigured && session ? "green" : "gold"} label={connectionLabel} />
           <span className="muted">Last sync: {formatSyncTime(sync.team.lastSyncedAt)}</span>
         </div>
 
-        <div className="metric-grid">
-          <Metric label="Active athletes" value={activeAthletes.length} accent="green" />
-          <Metric label="Daily workouts" value={dailyRoutines.length || 1} accent="orange" />
-          <Metric label="Scheduled" value={calendarEvents.length} accent="gold" />
+        <div className="workflow-step">
+          <div className="workflow-step-head">
+            <span>1</span>
+            <div>
+              <strong>Choose who gets this plan</strong>
+              <small>The selected group receives the seven-day workout shown below.</small>
+            </div>
+          </div>
+          <div className="form-grid">
+            <Field label="Assign workout to">
+              <select className="select" value={assignmentGroup} onChange={(event) => setAssignmentGroup(event.target.value)}>
+                <option value="all">All players</option>
+                {groups.map((group) => <option value={group} key={group}>{group}</option>)}
+              </select>
+            </Field>
+            <Field label="Team name">
+              <input className="input" value={sync.team.name} onChange={(event) => sync.updateTeam({ name: event.target.value })} />
+            </Field>
+            <Field label="Coach label">
+              <input className="input" value={sync.team.coachLabel} onChange={(event) => sync.updateTeam({ coachLabel: event.target.value })} />
+            </Field>
+          </div>
         </div>
 
-        {activeRoutine && (
-          <div className="sync-note">
-            <strong>Selected day preview:</strong> {activeRoutine.day} - {activeRoutine.focus} ({activeRoutine.minutes} min)
+        <div className="workflow-step">
+          <div className="workflow-step-head">
+            <span>2</span>
+            <div>
+              <strong>Review and push the workout</strong>
+              <small>{dailyRoutines.length || (activeRoutine ? 1 : 0)} workout days ready for {assignmentLabel}.</small>
+            </div>
           </div>
-        )}
-
-        <div className="form-grid">
-          <Field label="Team name">
-            <input className="input" value={sync.team.name} onChange={(event) => sync.updateTeam({ name: event.target.value })} />
-          </Field>
-          <Field label="Coach label">
-            <input className="input" value={sync.team.coachLabel} onChange={(event) => sync.updateTeam({ coachLabel: event.target.value })} />
-          </Field>
+          <div className="assignment-preview">
+            {(dailyRoutines.length ? dailyRoutines : activeRoutine ? [activeRoutine] : []).map((routine) => (
+              <div className="assignment-day" key={routine.id || `${routine.day}-${routine.focus}`}>
+                <strong>{routine.day}</strong>
+                <span>{routine.focus}</span>
+                <small>{routine.minutes ?? "--"} min</small>
+              </div>
+            ))}
+            {!dailyRoutines.length && !activeRoutine && (
+              <Empty text="Choose or build a workout plan before pushing." />
+            )}
+          </div>
+          <button
+            className="save-btn"
+            type="button"
+            onClick={syncAndRefresh}
+            disabled={!session || sync.status === "syncing" || (!dailyRoutines.length && !activeRoutine)}
+          >
+            {sync.status === "syncing" ? "Pushing..." : `Push Workout Plan to ${assignmentLabel}`}
+          </button>
         </div>
 
         {sync.message && <div className="callout">{sync.message}</div>}
-        <button className="save-btn" type="button" onClick={syncAndRefresh} disabled={!session || sync.status === "syncing"}>
-          {sync.status === "syncing" ? "Syncing..." : "Sync Team & Daily Plan"}
-        </button>
-      </Panel>
 
-      <Panel title="Groups" sub="Switch the coach view without mixing teams or age groups">
-        <div className="group-switcher" role="group" aria-label="Coach group view">
-          <button
-            className={`group-chip ${selectedGroup === "all" ? "active" : ""}`}
-            type="button"
-            onClick={() => setSelectedGroup("all")}
-          >
-            All players
-          </button>
-          {groups.map((group) => (
+        <div className="workflow-step">
+          <div className="workflow-step-head">
+            <span>3</span>
+            <div>
+              <strong>Create the player entry code</strong>
+              <small>Players enter once with their name—no email or password. The code opens {assignmentLabel}.</small>
+            </div>
+          </div>
+          <div className="sync-note">
+            One-time setup: Supabase Authentication → Sign In / Providers → turn on <strong>Allow anonymous sign-ins</strong>.
+          </div>
+          <div className="player-access-actions">
             <button
-              className={`group-chip ${selectedGroup === group ? "active" : ""}`}
+              className="save-btn"
               type="button"
-              onClick={() => setSelectedGroup(group)}
-              key={group}
+              onClick={createInvite}
+              disabled={!session || hubStatus === "working" || (!dailyRoutines.length && !activeRoutine)}
             >
-              {group}
+              {hubStatus === "working" ? "Creating..." : `Create Code + Push Plan`}
             </button>
-          ))}
-        </div>
-      </Panel>
-
-      <Panel title="Invite Center" sub="Create a short-lived code for the whole team or one group">
-        <div className="invite-builder">
-          <Field label="Add player to">
-            <select className="select" value={inviteGroup} onChange={(event) => setInviteGroup(event.target.value)}>
-              <option value="">Any group</option>
-              {groups.map((group) => <option value={group} key={group}>{group}</option>)}
-            </select>
-          </Field>
-          <button className="save-btn" type="button" onClick={createInvite} disabled={!session || hubStatus === "working"}>
-            Create player code
-          </button>
+            <button className="ghost-btn" type="button" onClick={() => copyText(playerLoginUrl, "Player login link copied")}>
+              Copy Player Login Page
+            </button>
+          </div>
         </div>
 
         {latestInvite && (
@@ -361,36 +415,68 @@ export default function TeamSync({ athletes, programs, calendarEvents, activeRou
             <div>
               <span className="eyebrow">{latestInvite.groupName}</span>
               <strong className="invite-code">{latestInvite.code}</strong>
-              <span className="muted">Expires in 14 days · up to 30 uses</span>
+              <span className="muted">Instant access · expires in 30 days · up to 30 players</span>
             </div>
             <div className="button-row">
               <button className="ghost-btn gold" type="button" onClick={() => copyText(latestInvite.code, "Code copied")}>Copy code</button>
-              <button className="ghost-btn" type="button" onClick={() => copyText(latestInvite.url, "Invite link copied")}>Copy link</button>
+              <button className="ghost-btn" type="button" onClick={() => copyText(latestInvite.url, "Player link copied")}>Copy player link</button>
             </div>
           </div>
         )}
 
         {hub.invitations.length > 0 && (
-          <div className="sync-list">
-            {hub.invitations.slice(0, 8).map((invite) => {
-              const group = hub.groups.find((item) => item.id === invite.group_id)?.name || "Any group";
-              const active = !invite.revoked_at && (!invite.expires_at || new Date(invite.expires_at) > new Date());
-              return (
-                <div className="sync-row" key={invite.id}>
-                  <div>
-                    <div className="item-title">{group} · ends in {invite.code_hint}</div>
-                    <div className="muted">{invite.uses}/{invite.max_uses || "∞"} joins · expires {formatShortDate(invite.expires_at)}</div>
+          <>
+            <div className="workflow-subtitle">Active player codes</div>
+            <div className="sync-list">
+              {hub.invitations.slice(0, 8).map((invite) => {
+                const group = hub.groups.find((item) => item.id === invite.group_id)?.name || "Any group";
+                const active = !invite.revoked_at && (!invite.expires_at || new Date(invite.expires_at) > new Date());
+                return (
+                  <div className="sync-row" key={invite.id}>
+                    <div>
+                      <div className="item-title">{group} · ends in {invite.code_hint}</div>
+                      <div className="muted">{invite.uses}/{invite.max_uses || "∞"} joins · expires {formatShortDate(invite.expires_at)}</div>
+                    </div>
+                    {active ? (
+                      <button className="text-button danger" type="button" onClick={() => removeInvite(invite.id)}>Close</button>
+                    ) : (
+                      <StatusPill tone="muted" label="Closed" />
+                    )}
                   </div>
-                  {active ? (
-                    <button className="text-button danger" type="button" onClick={() => removeInvite(invite.id)}>Close</button>
-                  ) : (
-                    <StatusPill tone="muted" label="Closed" />
-                  )}
-                </div>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
+          </>
         )}
+
+        <div className="workflow-step compact">
+          <div className="workflow-step-head">
+            <span>4</span>
+            <div>
+              <strong>Choose the group you want to oversee</strong>
+              <small>This filters join requests and workout proof below.</small>
+            </div>
+          </div>
+          <div className="group-switcher" role="group" aria-label="Coach group view">
+            <button
+              className={`group-chip ${selectedGroup === "all" ? "active" : ""}`}
+              type="button"
+              onClick={() => setSelectedGroup("all")}
+            >
+              All players
+            </button>
+            {groups.map((group) => (
+              <button
+                className={`group-chip ${selectedGroup === group ? "active" : ""}`}
+                type="button"
+                onClick={() => setSelectedGroup(group)}
+                key={group}
+              >
+                {group}
+              </button>
+            ))}
+          </div>
+        </div>
       </Panel>
 
       <Panel title="Join Requests" sub="No player enters the roster until a coach approves the request">

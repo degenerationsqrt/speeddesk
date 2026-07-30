@@ -23,19 +23,35 @@ export function buildInviteUrl(inviteCode) {
   return url.toString();
 }
 
-export function buildTeamSnapshot({ team, athletes, programs, calendarEvents, activeRoutine, dailyRoutines }) {
+export function buildPlayerLoginUrl() {
+  if (typeof window === "undefined") return "";
+  const url = new URL(window.location.href);
+  url.searchParams.delete("team");
+  url.searchParams.set("player", "1");
+  return url.toString();
+}
+
+export function buildTeamSnapshot({
+  team,
+  athletes,
+  programs,
+  calendarEvents,
+  activeRoutine,
+  dailyRoutines,
+  assignmentTarget = { type: "all", name: "" },
+}) {
   return {
     team: {
       id: team.id,
       name: team.name,
       coachLabel: team.coachLabel,
-      inviteCode: team.inviteCode,
     },
     sessions: calendarEvents,
     activeRoutine,
     dailyRoutines: Array.isArray(dailyRoutines) ? dailyRoutines : activeRoutine ? [activeRoutine] : [],
+    assignmentTarget,
     syncedAt: new Date().toISOString(),
-    version: 3,
+    version: 4,
   };
 }
 
